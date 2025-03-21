@@ -11,13 +11,55 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as ServicesImport } from './routes/services'
+import { Route as ContactImport } from './routes/contact'
+import { Route as AboutusImport } from './routes/aboutus'
 import { Route as IndexImport } from './routes/index'
+import { Route as AuthRegisterImport } from './routes/auth/register'
+import { Route as AuthProfileImport } from './routes/auth/profile'
+import { Route as AuthLoginImport } from './routes/auth/login'
 
 // Create/Update Routes
+
+const ServicesRoute = ServicesImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ContactRoute = ContactImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AboutusRoute = AboutusImport.update({
+  id: '/aboutus',
+  path: '/aboutus',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthRegisterRoute = AuthRegisterImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthProfileRoute = AuthProfileImport.update({
+  id: '/auth/profile',
+  path: '/auth/profile',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthLoginRoute = AuthLoginImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -32,6 +74,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/aboutus': {
+      id: '/aboutus'
+      path: '/aboutus'
+      fullPath: '/aboutus'
+      preLoaderRoute: typeof AboutusImport
+      parentRoute: typeof rootRoute
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactImport
+      parentRoute: typeof rootRoute
+    }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/profile': {
+      id: '/auth/profile'
+      path: '/auth/profile'
+      fullPath: '/auth/profile'
+      preLoaderRoute: typeof AuthProfileImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -39,32 +123,84 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aboutus': typeof AboutusRoute
+  '/contact': typeof ContactRoute
+  '/services': typeof ServicesRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/profile': typeof AuthProfileRoute
+  '/auth/register': typeof AuthRegisterRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aboutus': typeof AboutusRoute
+  '/contact': typeof ContactRoute
+  '/services': typeof ServicesRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/profile': typeof AuthProfileRoute
+  '/auth/register': typeof AuthRegisterRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/aboutus': typeof AboutusRoute
+  '/contact': typeof ContactRoute
+  '/services': typeof ServicesRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/profile': typeof AuthProfileRoute
+  '/auth/register': typeof AuthRegisterRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/aboutus'
+    | '/contact'
+    | '/services'
+    | '/auth/login'
+    | '/auth/profile'
+    | '/auth/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/aboutus'
+    | '/contact'
+    | '/services'
+    | '/auth/login'
+    | '/auth/profile'
+    | '/auth/register'
+  id:
+    | '__root__'
+    | '/'
+    | '/aboutus'
+    | '/contact'
+    | '/services'
+    | '/auth/login'
+    | '/auth/profile'
+    | '/auth/register'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutusRoute: typeof AboutusRoute
+  ContactRoute: typeof ContactRoute
+  ServicesRoute: typeof ServicesRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthProfileRoute: typeof AuthProfileRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutusRoute: AboutusRoute,
+  ContactRoute: ContactRoute,
+  ServicesRoute: ServicesRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthProfileRoute: AuthProfileRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
 }
 
 export const routeTree = rootRoute
@@ -77,11 +213,35 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/aboutus",
+        "/contact",
+        "/services",
+        "/auth/login",
+        "/auth/profile",
+        "/auth/register"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/aboutus": {
+      "filePath": "aboutus.tsx"
+    },
+    "/contact": {
+      "filePath": "contact.tsx"
+    },
+    "/services": {
+      "filePath": "services.tsx"
+    },
+    "/auth/login": {
+      "filePath": "auth/login.tsx"
+    },
+    "/auth/profile": {
+      "filePath": "auth/profile.tsx"
+    },
+    "/auth/register": {
+      "filePath": "auth/register.tsx"
     }
   }
 }
