@@ -2,7 +2,7 @@ type MenuItem = {
     title: string;
     path?: string;
     hasDropdown?: boolean;
-    requiredRoles?: string[]; // TODO
+    requiredRoles?: string[];
     subItems?: { title: string; path: string }[];
   };
 

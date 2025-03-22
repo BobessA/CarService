@@ -1,10 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import Services from '../components/Services'
 
-export const Route = createFileRoute('/services')({
+export const Route = createFileRoute('/admin/')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  return <Services />
+  return <div>Hello "/admin/"!</div>
 }
