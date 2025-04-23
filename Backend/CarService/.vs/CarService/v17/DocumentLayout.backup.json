@@ -1,0 +1,53 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Nerik\\GitHub\\Info Projekt\\CarService\\Backend\\CarService\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{3EA1BBB0-2587-48AB-9CD0-49A52B0DC3CD}|CarService\\CarService.csproj|d:\\nerik\\github\\info projekt\\carservice\\backend\\carservice\\carservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3EA1BBB0-2587-48AB-9CD0-49A52B0DC3CD}|CarService\\CarService.csproj|solutionrelative:carservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3EA1BBB0-2587-48AB-9CD0-49A52B0DC3CD}|CarService\\CarService.csproj|d:\\nerik\\github\\info projekt\\carservice\\backend\\carservice\\carservice\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{3EA1BBB0-2587-48AB-9CD0-49A52B0DC3CD}|CarService\\CarService.csproj|solutionrelative:carservice\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Nerik\\GitHub\\Info Projekt\\CarService\\Backend\\CarService\\CarService\\Program.cs",
+              "RelativeDocumentMoniker": "CarService\\Program.cs",
+              "ToolTip": "D:\\Nerik\\GitHub\\Info Projekt\\CarService\\Backend\\CarService\\CarService\\Program.cs",
+              "RelativeToolTip": "CarService\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-23T13:21:24.338Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\Nerik\\GitHub\\Info Projekt\\CarService\\Backend\\CarService\\CarService\\appsettings.json",
+              "RelativeDocumentMoniker": "CarService\\appsettings.json",
+              "ToolTip": "D:\\Nerik\\GitHub\\Info Projekt\\CarService\\Backend\\CarService\\CarService\\appsettings.json",
+              "RelativeToolTip": "CarService\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-04-23T13:20:57.688Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
