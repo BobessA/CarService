@@ -33,7 +33,7 @@ public partial class Offer
     public int StatusId { get; set; }
 
     [Column("agent_id")]
-    public Guid AgentId { get; set; }
+    public Guid? AgentId { get; set; }
 
     [Column("appointment_date", TypeName = "datetime")]
     public DateTime? AppointmentDate { get; set; }

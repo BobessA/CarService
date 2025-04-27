@@ -110,7 +110,7 @@ if not exists (select 1 from sys.objects where name='Offers' and type='U')
 		request_date DATETIME NOT NULL DEFAULT GETDATE(),
 		issue_description NVARCHAR(512) NULL,
 		status_id INT NOT NULL,
-		agent_id UNIQUEIDENTIFIER NOT NULL,
+		agent_id UNIQUEIDENTIFIER NULL,
 		appointment_date DATETIME NULL,
 		admin_comment NVARCHAR(512) NULL,
 		CONSTRAINT FK_Offer_Customer FOREIGN KEY (customer_id) REFERENCES Users(id),  
@@ -403,4 +403,7 @@ end
 GO
 
 alter table Users alter column password_hash NVARCHAR(255)
+GO
+
+alter table Offers alter column agent_id UNIQUEIDENTIFIER NULL
 GO
