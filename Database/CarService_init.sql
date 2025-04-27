@@ -26,7 +26,7 @@ if not exists (select 1 from sys.objects where name='Users' and type='U')
 	CREATE TABLE Users (
 		id UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
 		name NVARCHAR(128) NOT NULL,
-		password_hash NVARCHAR(255) NOT NULL,
+		password_hash NVARCHAR(255) NULL,
 		role_id INT NOT NULL,
 		discount SMALLINT DEFAULT 0,
 		CONSTRAINT FK_User_Role FOREIGN KEY (role_id) REFERENCES Roles(id)
@@ -387,4 +387,20 @@ select 'LED',(select top 1 category_id from Product_Categories where category_na
 select 'Xenon',(select top 1 category_id from Product_Categories where category_name='Izzó') where not exists (select 1 from Product_Categories where category_name='Xenon') 
 GO
 
+if not exists (select 1 from sys.all_columns c where exists (select 1 from sys.objects o where type='U' and name='users' and o.object_id=c.object_id)
+	and c.name='email')
+begin
+	delete from Users
+	alter table Users add email nvarchar(128) NOT NULL
+end
+GO
 
+if not exists (select 1 from sys.all_columns c where exists (select 1 from sys.objects o where type='U' and name='users' and o.object_id=c.object_id)
+	and c.name='phone')
+begin
+	alter table Users add phone nvarchar(64)
+end
+GO
+
+alter table Users alter column password_hash NVARCHAR(255)
+GO

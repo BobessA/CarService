@@ -18,13 +18,21 @@ public partial class User
 
     [Column("password_hash")]
     [StringLength(255)]
-    public string PasswordHash { get; set; } = null!;
+    public string? PasswordHash { get; set; }
 
     [Column("role_id")]
     public int RoleId { get; set; }
 
     [Column("discount")]
     public short? Discount { get; set; }
+
+    [Column("email")]
+    [StringLength(128)]
+    public string Email { get; set; } = null!;
+
+    [Column("phone")]
+    [StringLength(64)]
+    public string? Phone { get; set; }
 
     [InverseProperty("Customer")]
     public virtual ICollection<Offer> Offers { get; set; } = new List<Offer>();
