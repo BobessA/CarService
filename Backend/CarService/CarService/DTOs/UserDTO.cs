@@ -22,6 +22,7 @@ namespace CarService.DTOs
         /// <example>teszt@teszt.hu</example>
         [Required]
         [Display(Name = "E-mail cím")]
+        [StringLength(128)]
         public string email { get; set; }
 
         /// <summary>
@@ -30,6 +31,7 @@ namespace CarService.DTOs
         /// <example>Nagy István</example>
         [Required]
         [Display(Name = "Személynév")]
+        [StringLength(128)]
         public string name { get; set; }
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace CarService.DTOs
         /// </summary>
         /// <example>069066666666</example>
         [Display(Name = "Telefonszám")]
+        [StringLength(64)]
         public string? phone { get; set; }
 
         /// <summary>
@@ -67,6 +70,7 @@ namespace CarService.DTOs
         /// <example>teszt@teszt.hu</example>
         [Required]
         [Display(Name = "E-mail cím")]
+        [StringLength(128)]
         public string email { get; set; }
 
         /// <summary>
@@ -83,6 +87,7 @@ namespace CarService.DTOs
         /// <example>Nagy István</example>
         [Required]
         [Display(Name = "Személynév")]
+        [StringLength(128)]
         public string name { get; set; }
 
         /// <summary>
@@ -90,6 +95,7 @@ namespace CarService.DTOs
         /// </summary>
         /// <example>069066666666</example>
         [Display(Name = "Telefonszám")]
+        [StringLength(64)]
         public string? phone { get; set; }
 
         /// <summary>
@@ -129,6 +135,7 @@ namespace CarService.DTOs
         /// <example>Nagy István</example>
         [Required]
         [Display(Name = "Személynév")]
+        [StringLength(128)]
         public string name { get; set; }
 
         /// <summary>
@@ -137,6 +144,7 @@ namespace CarService.DTOs
         /// <example>teszt@teszt.hu</example>
         [Required]
         [Display(Name = "E-mail cím")]
+        [StringLength(128)]
         public string email { get; set; }
 
         /// <summary>
@@ -144,6 +152,7 @@ namespace CarService.DTOs
         /// </summary>
         /// <example>069066666666</example>
         [Display(Name = "Telefonszám")]
+        [StringLength(64)]
         public string? phone { get; set; }
 
         /// <summary>
@@ -175,6 +184,7 @@ namespace CarService.DTOs
         /// <example>Nagy István</example>
         [Required]
         [Display(Name = "Személynév")]
+        [StringLength(128)]
         public string name { get; set; }
 
         /// <summary>
@@ -182,6 +192,7 @@ namespace CarService.DTOs
         /// </summary>
         /// <example>069066666666</example>
         [Display(Name = "Telefonszám")]
+        [StringLength(64)]
         public string? phone { get; set; }
 
         /// <summary>
