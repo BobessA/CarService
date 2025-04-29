@@ -29,7 +29,7 @@ namespace CarService.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<UserDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetUsers(string? userId, CancellationToken cToken)
         {
             var query = _context.Users.AsQueryable();
@@ -42,7 +42,7 @@ namespace CarService.Controllers
                 }
                 else
                 {
-                    return BadRequest("Invalid userId format.");
+                    return BadRequest(new GenericResponseDTO("Users", "GET", "Invalid userId format", null));
                 }
             }
 
@@ -75,7 +75,7 @@ namespace CarService.Controllers
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> PutUser([FromBody] UpdateUserRequest request, CancellationToken cToken)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.userId, cToken);
@@ -97,7 +97,7 @@ namespace CarService.Controllers
             } 
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new GenericResponseDTO("Users", "PUT", ex.Message, null));
             }
 
         }
@@ -110,12 +110,12 @@ namespace CarService.Controllers
         /// <returns>200, 400</returns>
         [HttpPost("Registration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Registration([FromBody] RegistrationRequest request, CancellationToken cToken)
         {
             if (await _context.Users.AnyAsync(u => u.Email == request.email && u.PasswordHash != null, cToken))
             {
-                return StatusCode(StatusCodes.Status400BadRequest, "Already registered user");
+                return BadRequest(new GenericResponseDTO("Users/Registration", "GET", "Already registered user", null));
             } 
             else if (await _context.Users.AnyAsync(u => u.Email == request.email, cToken))
             {

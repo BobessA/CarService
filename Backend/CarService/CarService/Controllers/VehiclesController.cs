@@ -30,7 +30,7 @@ namespace CarService.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<VehiclesDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetVehicles(int? vehicleId, string? userId, CancellationToken cToken)
         {
             var query = _context.Vehicles.AsQueryable();
@@ -48,7 +48,7 @@ namespace CarService.Controllers
                 }
                 else
                 {
-                    return BadRequest("Invalid userId format.");
+                    return BadRequest(new GenericResponseDTO("Vehicles","GET","Invalid userId format",null));
                 }
             }
 
@@ -84,17 +84,17 @@ namespace CarService.Controllers
         /// <returns>200, 400</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> PostVehicle([FromBody] PostVehicleRequest request, CancellationToken cToken)
         {
             if (!await _context.Users.AnyAsync(u => u.Id == request.ownerId, cToken))
             {
-                return StatusCode(StatusCodes.Status400BadRequest, "Owner does not exists");
+                return BadRequest(new GenericResponseDTO("Vehicles", "POST", "Owner does not exists", null));
             }
 
             if (!await _context.FuelTypes.AnyAsync(f => f.Id == request.fuelType, cToken))
             {
-                return StatusCode(StatusCodes.Status400BadRequest, "Invalid Fuel type");
+                return BadRequest(new GenericResponseDTO("Vehicles", "POST", "Invalid Fuel type", null));
             }
 
             var vehicle = new Vehicle
@@ -124,20 +124,20 @@ namespace CarService.Controllers
         /// <returns>200, 400, 204</returns>
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> PutVehicle([FromBody] UpdateVehicleRequest request, CancellationToken cToken)
         {
             var vehicle = await _context.Vehicles.FirstOrDefaultAsync(u => u.Id == request.id, cToken);
 
             if (vehicle == null)
             {
-                return NoContent();
+                return NotFound();
             }
 
             if (request.ownerId != null && !await _context.Users.AnyAsync(u => u.Id == request.ownerId, cToken))
             {
-                return StatusCode(StatusCodes.Status400BadRequest, "Owner does not exists");
+                return BadRequest(new GenericResponseDTO("Vehicles", "PUT", "Owner dows not exists", null));
             }
 
             vehicle.OwnerId = request.ownerId ?? vehicle.OwnerId;
@@ -150,7 +150,7 @@ namespace CarService.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new GenericResponseDTO("Vehicles", "PUT", ex.Message, null));
             }
 
         }
@@ -163,7 +163,7 @@ namespace CarService.Controllers
         /// <returns>204, 400, 204</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteVehicle(int id, CancellationToken cToken)
         {
@@ -176,12 +176,12 @@ namespace CarService.Controllers
 
             if (await _context.OrdersHeaders.AnyAsync(o => o.VehicleId == id, cToken))
             {
-                return StatusCode(StatusCodes.Status400BadRequest, "Vehicle is already listed on an order");
+                return BadRequest(new GenericResponseDTO("Vehicles", "DELETE", "Vehicle is already listed on an order", null));
             }
 
             if (await _context.Offers.AnyAsync(o => o.VehicleId == id, cToken))
             {
-                return StatusCode(StatusCodes.Status400BadRequest, "Vehicle is already listed on an offer");
+                return BadRequest(new GenericResponseDTO("Vehicles", "DELETE", "Vehicle is already listed on an offer", null));
             }
 
             try
@@ -193,7 +193,7 @@ namespace CarService.Controllers
             } 
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return BadRequest(new GenericResponseDTO("Vehicles", "POST", ex.Message, null));
             }
         }
     }
