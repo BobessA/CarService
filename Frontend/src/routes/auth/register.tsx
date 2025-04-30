@@ -11,6 +11,7 @@ function RouteComponent() {
     name: "",
     email: "",
     password: "",
+    phone: "",
     confirmPassword: "",
   });
 
@@ -18,13 +19,41 @@ function RouteComponent() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("A jelszavak nem egyeznek!");
       return;
     }
-    console.log("Regisztráció:", formData);
+
+    //Creating a new object so we won't pass the confirmPassword field to the backend
+    const {name,email,password,phone,} = formData;
+    const userToRegister = { name, email, password, phone };
+
+    try {
+
+      const response = await fetch("https://localhost:7197/api/Users/Registration", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userToRegister),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+      console.log('Registration successful:', data);
+      alert('Sikeres regisztráció!');
+
+    }catch (error){
+      console.error('Registration error:', error);
+      alert('Regisztrációs hiba: ' + (error instanceof Error ? error.message : 'Ismeretlen hiba'));  
+    }
+
+
   };
 
   return (
@@ -62,6 +91,21 @@ function RouteComponent() {
               onChange={handleChange}
               className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring focus:ring-indigo-500"
               placeholder="pelda@email.com"
+            />
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Telefonszám
+            </label>
+            <input
+              type="text"
+              name="phone"
+              required
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring focus:ring-indigo-500"
+              placeholder="+36123456789"
             />
           </div>
 

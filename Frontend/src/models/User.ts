@@ -1,5 +1,7 @@
 type User = {
-    username: string;
+    name: string;
+    userId: string;
+    email: string;
     role: "admin" | "user"; // Todo: Tulajdonos, ügyintéző,szerelő, klies
   };
 

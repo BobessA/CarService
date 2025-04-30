@@ -15,6 +15,18 @@ builder.Services.AddDbContext<CarServiceContext>(options =>
 
 builder.Services.AddScoped<TokenValidationService>();
 
+//Added CORS to the app in order to make the API work
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddSwaggerGen(o =>
 {
     o.SwaggerDoc("v1", new OpenApiInfo
@@ -36,6 +48,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+app.UseCors("AllowReactFrontend");
 
 app.UseMiddleware<AuthenticationMiddleware>();
 app.UseAuthorization();

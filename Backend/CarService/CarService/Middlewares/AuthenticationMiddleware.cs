@@ -9,6 +9,14 @@ namespace CarService.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly IServiceProvider _serviceProvider;
+        //Adding a variable that contains paths where the site doesn't check for a token
+        private readonly string[] _exemptedPaths = new[]
+{
+            "/registration",
+            "/login",
+            "/swagger",
+            "/favicon.ico"
+        };
 
         public AuthenticationMiddleware(RequestDelegate next, IServiceProvider serviceProvider)
         {
@@ -18,6 +26,14 @@ namespace CarService.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
+            //First, we check if the requested path is in the exempted list,
+            //and proceed with the request without token authentication if so.
+            if (ShouldExemptFromAuth(context.Request.Path))
+            {
+                await _next(context);
+                return;
+            }
+
             var path = context.Request.Path.ToString().ToLower();
             if (path.EndsWith("/registration") || path.EndsWith("/login"))
             {
@@ -46,6 +62,14 @@ namespace CarService.Middlewares
             }
 
             await _next(context);
+        }
+
+        private bool ShouldExemptFromAuth(PathString path)
+        {
+            var pathString = path.ToString().ToLower();
+            return _exemptedPaths.Any(exempted =>
+                pathString.StartsWith(exempted) ||
+                pathString.EndsWith(exempted));
         }
 
     }

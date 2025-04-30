@@ -14,7 +14,7 @@ function RouteComponent() {
 
 
   const handleSubmit = () => {
-    login(email,"admin");
+    login(email,password);
   };
 
   return (

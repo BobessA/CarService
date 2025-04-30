@@ -3,6 +3,7 @@ import { redirect } from "@tanstack/react-router";
 import AuthContextType from "../models/AuthContext";
 import User from "../models/User";
 
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -11,11 +12,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
-  const login = (username: string, role: "admin" | "user") => {
-    const newUser = { username, role };
-    setUser(newUser);
-    localStorage.setItem("user", JSON.stringify(newUser));
-    redirect({ to: "/" });
+  const login = async (email: string, password: string) => {
+
+    try {
+      const base64Credentials = btoa(`${email}:${password}`);
+      const response = await fetch('https://localhost:7197/api/Users/Login', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${base64Credentials}`
+        },
+      });
+
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      localStorage.setItem("user", JSON.stringify(data));
+
+
+    }catch(error){
+      console.error('Login error:', error);
+      localStorage.removeItem('user');
+      alert('Login failed. Please check your credentials.');
+    };
+    //I know this used to be redirect, but it didn't work :(
+    window.location.href = "/";
   };
 
   const logout = () => {
@@ -49,7 +74,8 @@ export const getCurrentUser = () => {
   if (!userData) return null; 
 
   try {
-    return JSON.parse(userData); 
+    return JSON.parse(userData);
+    console.log(userData); 
   } catch (error) {
     console.error("Hibás felhasználói adat!", error);
     return null;
