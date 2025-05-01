@@ -165,7 +165,6 @@ namespace CarService.Controllers
 
             string email;
             string password;
-
             try
             {
                 string userPassword = (Encoding.UTF8.GetString(Convert.FromBase64String(auth)));
@@ -176,6 +175,8 @@ namespace CarService.Controllers
 
                 email = userPassword.Split(':', 2)[0];
                 password = userPassword.Split(':', 2)[1];
+
+                Console.WriteLine(email, password);
 
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email, cToken);
 
@@ -203,6 +204,8 @@ namespace CarService.Controllers
             }
             catch
             {
+                Console.WriteLine("catch... 1");
+
                 return Unauthorized();
             }
         }

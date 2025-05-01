@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,FormEvent } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -13,7 +13,8 @@ function RouteComponent() {
   const { login } = useAuth();
 
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     login(email,password);
   };
 

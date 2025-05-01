@@ -12,7 +12,7 @@ namespace CarService.Middlewares
         //Adding a variable that contains paths where the site doesn't check for a token
         private readonly string[] _exemptedPaths = new[]
 {
-            "/registration",
+            "/Registration",
             "/login",
             "/swagger",
             "/favicon.ico"
@@ -38,6 +38,7 @@ namespace CarService.Middlewares
             if (path.EndsWith("/registration") || path.EndsWith("/login"))
             {
                 await _next(context);
+                return;
             }
 
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();

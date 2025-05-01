@@ -12,7 +12,7 @@ export const menuItems: MenuItem[] = [
   { title: "Kapcsolat", path: "/contact" },
   {
     title: "Adminisztráció",
-    requiredRoles: ["admin"],
+    requiredRoles: [4],
     path: "/admin",
   },
 ];
@@ -93,7 +93,7 @@ const Navbar: React.FC = () => {
                 (!item.requiredRoles ||
                   (user &&
                     (!item.requiredRoles ||
-                      item.requiredRoles.includes(user.role)))) && (
+                      item.requiredRoles.includes(user.roleId)))) && (
                   <div
                     key={item.title}
                     className="relative group"
@@ -189,7 +189,7 @@ const Navbar: React.FC = () => {
               (!item.requiredRoles ||
                 (user &&
                   (!item.requiredRoles ||
-                    item.requiredRoles.includes(user.role)))) && (
+                    item.requiredRoles.includes(user.roleId)))) && (
                 <div key={item.title}>
                   {item.hasDropdown ? (
                     <>

@@ -1,12 +1,15 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import  RegisterFormData  from "../../models/RegisterFormData";
+import { useAuth } from "../../contexts/AuthContext";
 
 export const Route = createFileRoute("/auth/register")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { register } = useAuth();
+
   const [formData, setFormData] = useState<RegisterFormData>({
     name: "",
     email: "",
@@ -25,34 +28,8 @@ function RouteComponent() {
       alert("A jelszavak nem egyeznek!");
       return;
     }
-
-    //Creating a new object so we won't pass the confirmPassword field to the backend
     const {name,email,password,phone,} = formData;
-    const userToRegister = { name, email, password, phone };
-
-    try {
-
-      const response = await fetch("https://localhost:7197/api/Users/Registration", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userToRegister),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : null;
-      console.log('Registration successful:', data);
-      alert('Sikeres regisztráció!');
-
-    }catch (error){
-      console.error('Registration error:', error);
-      alert('Regisztrációs hiba: ' + (error instanceof Error ? error.message : 'Ismeretlen hiba'));  
-    }
-
+    register(name,email,password,phone);
 
   };
 
