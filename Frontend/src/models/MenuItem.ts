@@ -4,6 +4,7 @@ type MenuItem = {
     hasDropdown?: boolean;
     requiredRoles?: number[];
     subItems?: { title: string; path: string }[];
+    special?: boolean;
   };
 
 export default MenuItem;

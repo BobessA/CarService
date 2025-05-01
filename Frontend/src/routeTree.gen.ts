@@ -11,7 +11,9 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as ThankYouImport } from './routes/thank-you'
 import { Route as ServicesImport } from './routes/services'
+import { Route as OfferImport } from './routes/offer'
 import { Route as ContactImport } from './routes/contact'
 import { Route as AboutusImport } from './routes/aboutus'
 import { Route as IndexImport } from './routes/index'
@@ -19,13 +21,26 @@ import { Route as AdminIndexImport } from './routes/admin/index'
 import { Route as AuthRegisterImport } from './routes/auth/register'
 import { Route as AuthProfileImport } from './routes/auth/profile'
 import { Route as AuthLoginImport } from './routes/auth/login'
+import { Route as AdminOffersIndexImport } from './routes/admin/offers/index'
 import { Route as AdminCarsIndexImport } from './routes/admin/cars/index'
 
 // Create/Update Routes
 
+const ThankYouRoute = ThankYouImport.update({
+  id: '/thank-you',
+  path: '/thank-you',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ServicesRoute = ServicesImport.update({
   id: '/services',
   path: '/services',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const OfferRoute = OfferImport.update({
+  id: '/offer',
+  path: '/offer',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -71,6 +86,12 @@ const AuthLoginRoute = AuthLoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AdminOffersIndexRoute = AdminOffersIndexImport.update({
+  id: '/admin/offers/',
+  path: '/admin/offers/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AdminCarsIndexRoute = AdminCarsIndexImport.update({
   id: '/admin/cars/',
   path: '/admin/cars/',
@@ -102,11 +123,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactImport
       parentRoute: typeof rootRoute
     }
+    '/offer': {
+      id: '/offer'
+      path: '/offer'
+      fullPath: '/offer'
+      preLoaderRoute: typeof OfferImport
+      parentRoute: typeof rootRoute
+    }
     '/services': {
       id: '/services'
       path: '/services'
       fullPath: '/services'
       preLoaderRoute: typeof ServicesImport
+      parentRoute: typeof rootRoute
+    }
+    '/thank-you': {
+      id: '/thank-you'
+      path: '/thank-you'
+      fullPath: '/thank-you'
+      preLoaderRoute: typeof ThankYouImport
       parentRoute: typeof rootRoute
     }
     '/auth/login': {
@@ -144,6 +179,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCarsIndexImport
       parentRoute: typeof rootRoute
     }
+    '/admin/offers/': {
+      id: '/admin/offers/'
+      path: '/admin/offers'
+      fullPath: '/admin/offers'
+      preLoaderRoute: typeof AdminOffersIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -153,24 +195,30 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/aboutus': typeof AboutusRoute
   '/contact': typeof ContactRoute
+  '/offer': typeof OfferRoute
   '/services': typeof ServicesRoute
+  '/thank-you': typeof ThankYouRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/profile': typeof AuthProfileRoute
   '/auth/register': typeof AuthRegisterRoute
   '/admin': typeof AdminIndexRoute
   '/admin/cars': typeof AdminCarsIndexRoute
+  '/admin/offers': typeof AdminOffersIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/aboutus': typeof AboutusRoute
   '/contact': typeof ContactRoute
+  '/offer': typeof OfferRoute
   '/services': typeof ServicesRoute
+  '/thank-you': typeof ThankYouRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/profile': typeof AuthProfileRoute
   '/auth/register': typeof AuthRegisterRoute
   '/admin': typeof AdminIndexRoute
   '/admin/cars': typeof AdminCarsIndexRoute
+  '/admin/offers': typeof AdminOffersIndexRoute
 }
 
 export interface FileRoutesById {
@@ -178,12 +226,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/aboutus': typeof AboutusRoute
   '/contact': typeof ContactRoute
+  '/offer': typeof OfferRoute
   '/services': typeof ServicesRoute
+  '/thank-you': typeof ThankYouRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/profile': typeof AuthProfileRoute
   '/auth/register': typeof AuthRegisterRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/cars/': typeof AdminCarsIndexRoute
+  '/admin/offers/': typeof AdminOffersIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -192,34 +243,43 @@ export interface FileRouteTypes {
     | '/'
     | '/aboutus'
     | '/contact'
+    | '/offer'
     | '/services'
+    | '/thank-you'
     | '/auth/login'
     | '/auth/profile'
     | '/auth/register'
     | '/admin'
     | '/admin/cars'
+    | '/admin/offers'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/aboutus'
     | '/contact'
+    | '/offer'
     | '/services'
+    | '/thank-you'
     | '/auth/login'
     | '/auth/profile'
     | '/auth/register'
     | '/admin'
     | '/admin/cars'
+    | '/admin/offers'
   id:
     | '__root__'
     | '/'
     | '/aboutus'
     | '/contact'
+    | '/offer'
     | '/services'
+    | '/thank-you'
     | '/auth/login'
     | '/auth/profile'
     | '/auth/register'
     | '/admin/'
     | '/admin/cars/'
+    | '/admin/offers/'
   fileRoutesById: FileRoutesById
 }
 
@@ -227,24 +287,30 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutusRoute: typeof AboutusRoute
   ContactRoute: typeof ContactRoute
+  OfferRoute: typeof OfferRoute
   ServicesRoute: typeof ServicesRoute
+  ThankYouRoute: typeof ThankYouRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthProfileRoute: typeof AuthProfileRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminCarsIndexRoute: typeof AdminCarsIndexRoute
+  AdminOffersIndexRoute: typeof AdminOffersIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutusRoute: AboutusRoute,
   ContactRoute: ContactRoute,
+  OfferRoute: OfferRoute,
   ServicesRoute: ServicesRoute,
+  ThankYouRoute: ThankYouRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthProfileRoute: AuthProfileRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminCarsIndexRoute: AdminCarsIndexRoute,
+  AdminOffersIndexRoute: AdminOffersIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -260,12 +326,15 @@ export const routeTree = rootRoute
         "/",
         "/aboutus",
         "/contact",
+        "/offer",
         "/services",
+        "/thank-you",
         "/auth/login",
         "/auth/profile",
         "/auth/register",
         "/admin/",
-        "/admin/cars/"
+        "/admin/cars/",
+        "/admin/offers/"
       ]
     },
     "/": {
@@ -277,8 +346,14 @@ export const routeTree = rootRoute
     "/contact": {
       "filePath": "contact.tsx"
     },
+    "/offer": {
+      "filePath": "offer.tsx"
+    },
     "/services": {
       "filePath": "services.tsx"
+    },
+    "/thank-you": {
+      "filePath": "thank-you.tsx"
     },
     "/auth/login": {
       "filePath": "auth/login.tsx"
@@ -294,6 +369,9 @@ export const routeTree = rootRoute
     },
     "/admin/cars/": {
       "filePath": "admin/cars/index.tsx"
+    },
+    "/admin/offers/": {
+      "filePath": "admin/offers/index.tsx"
     }
   }
 }

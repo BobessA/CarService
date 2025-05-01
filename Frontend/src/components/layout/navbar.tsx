@@ -20,6 +20,12 @@ export const menuItems: MenuItem[] = [
       { title: "Autók", path: "/admin/cars/" },
     ],
   },
+  {
+    title: "Ajánlatkérés!",
+    path: "/offer",
+    special: true,
+    requiredRoles: [1,2,3,4],
+  },
 ];
 
 export const authItems: AuthItem[] = [
@@ -99,8 +105,8 @@ const Navbar: React.FC = () => {
               (item) =>
                 (!item.requiredRoles ||
                   (user &&
-                    (!item.requiredRoles ||
-                      item.requiredRoles.includes(user.roleId)))) && (
+                    ((!item.requiredRoles ||
+                      item.requiredRoles.includes(user.roleId)) && !item.special ))) && (
                   <div
                     key={item.title}
                     className="relative group"
@@ -143,33 +149,36 @@ const Navbar: React.FC = () => {
                     )}
                   </div>
                 )
-            )}
+              )}
           </div>
 
           <div className="hidden sm:flex sm:items-center">
-          {user ? (
-  <div className="relative">
-    <button
-      onClick={() => setUserMenuOpen(open => !open)}
-      className="flex items-center text-gray-900 px-3 py-2 text-sm rounded-md hover:bg-gray-100"
-    >
-      Üdv, {user.name}! <ChevronDown size={16} className="ml-1" />
-    </button>
-    {userMenuOpen && (
-      <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
-        <Link to="/auth/profile" className="block px-4 py-2 hover:bg-gray-100">
-          Profilom
-        </Link>
-        <button
-          onClick={logout}
-          className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
-        >
-          Kijelentkezés
-        </button>
-      </div>
-    )}
-  </div>
-) : (
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen((open) => !open)}
+                  className="flex items-center text-gray-900 px-3 py-2 text-sm rounded-md hover:bg-gray-100"
+                >
+                  Üdv, {user.name}! <ChevronDown size={16} className="ml-1" />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
+                    <Link
+                      to="/auth/profile"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      Profilom
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                    >
+                      Kijelentkezés
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
               authItems.map((auth) => (
                 <Link
                   key={auth.title}
@@ -184,6 +193,24 @@ const Navbar: React.FC = () => {
                 </Link>
               ))
             )}
+
+            {menuItems.map(
+              (item) =>
+                (item.special &&
+                  (user &&
+                    ((!item.requiredRoles ||
+                      item.requiredRoles.includes(user.roleId)) ))) && (
+                      <Link
+                        key={item.title}
+                        to={item.path || "#"}
+                        className={`px-3 py-2 rounded-md text-sm font-medium text-gray-900 bg-red-600 text-white`}
+                      >
+                        {item.title}
+                      </Link>
+                      )
+                    )
+                  }
+            
           </div>
 
           <div className="sm:hidden flex items-center">
@@ -206,7 +233,7 @@ const Navbar: React.FC = () => {
               (!item.requiredRoles ||
                 (user &&
                   (!item.requiredRoles ||
-                    item.requiredRoles.includes(user.roleId)))) && (
+                    item.requiredRoles.includes(user.roleId) && !item.special))) && (
                 <div key={item.title}>
                   {item.hasDropdown ? (
                     <>
@@ -246,10 +273,10 @@ const Navbar: React.FC = () => {
           )}
 
           <div className="pt-4 pb-3 border-t border-gray-200">
-          {user ? (
+            {user ? (
               <>
                 <button
-                  onClick={() => setMobileUserOpen(v => !v)}
+                  onClick={() => setMobileUserOpen((v) => !v)}
                   className="flex justify-between w-full px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md"
                 >
                   <span>Üdv, {user.name}!</span>
@@ -292,6 +319,26 @@ const Navbar: React.FC = () => {
                 ))}
               </div>
             )}
+             {menuItems.map(
+              (item) =>
+                (item.special &&
+                  (user &&
+                    ((!item.requiredRoles ||
+                      item.requiredRoles.includes(user.roleId)) ))) && (
+                        <Link
+                        key={item.title}
+                        to={item.path}
+                        className={`block w-full text-center px-3 py-2 rounded-md text-base font-medium ${
+                          item.special
+                            ? "bg-red-600 text-white hover:bg-red-700"
+                            : "text-gray-900 hover:bg-gray-100"
+                        }`}
+                        >
+                        {item.title}
+                        </Link>
+                      )
+                    )
+                  }
           </div>
         </div>
       </div>
