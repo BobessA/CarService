@@ -1,0 +1,313 @@
+{
+	"info": {
+		"_postman_id": "e2b8eeb1-021a-44e3-a32a-cf059f93ef61",
+		"name": "CarService",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14175503"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "valami",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "valami",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7197/api/Users/login",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7197",
+					"path": [
+						"api",
+						"Users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Users",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "B7739613-1AF8-448D-8D4B-5129C0EC6259",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7197/api/Users?userId=7A8097F2-D196-4D19-BF42-8E06B429F55A",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7197",
+					"path": [
+						"api",
+						"Users"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "7A8097F2-D196-4D19-BF42-8E06B429F55A"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Registration",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"teszt2@teszt.hu\",\r\n  \"password\": \"admin1234\",\r\n  \"name\": \"Nagy István\",\r\n  \"phone\": \"069066666666\",\r\n  \"roleId\": 3\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7197/api/Users/Registration",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7197",
+					"path": [
+						"api",
+						"Users",
+						"Registration"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Users",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "B7739613-1AF8-448D-8D4B-5129C0EC6259",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": \"7A8097F2-D196-4D19-BF42-8E06B429F55A\",\r\n  \"name\": \"Adrián\",\r\n  \"phone\": \"06201111100\",\r\n  \"roleId\": 4,\r\n  \"discount\": 27\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7197/api/Users",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7197",
+					"path": [
+						"api",
+						"Users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Vehicles",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "561104e8-52e0-4210-b949-caa54fccf873",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7197/api/vehicles?vehicleId=2",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7197",
+					"path": [
+						"api",
+						"vehicles"
+					],
+					"query": [
+						{
+							"key": "vehicleId",
+							"value": "2"
+						},
+						{
+							"key": "userId",
+							"value": "561104e8-52e0-4210-b949-caa54fccf873",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Vehicles",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "561104e8-52e0-4210-b949-caa54fccf873",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"ownerId\": \"561104E8-52E0-4210-B949-CAA54FCCF873\",\r\n  \"licensePlate\": \"XYZ-002\",\r\n  \"brand\": \"Audi\",\r\n  \"model\": \"A4\",\r\n  \"yearOfManufacture\": 2008,\r\n  \"vin\": \"wewxxx121ehwu351n\",\r\n  \"engineCode\": \"CAGA\",\r\n  \"odometer\": 276000,\r\n  \"fuelType\": 1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7197/api/vehicles",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7197",
+					"path": [
+						"api",
+						"vehicles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Vehicles",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "561104e8-52e0-4210-b949-caa54fccf873",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": 2,\r\n  \"ownerId\": \"561104E8-52E0-4210-B949-CAA54FCCF872\",\r\n  \"odometer\": 281000\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7197/api/vehicles",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7197",
+					"path": [
+						"api",
+						"vehicles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Vehicles",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "561104e8-52e0-4210-b949-caa54fccf873",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": 2,\r\n  \"ownerId\": \"561104E8-52E0-4210-B949-CAA54FCCF872\",\r\n  \"odometer\": 281000\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7197/api/vehicles/2",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7197",
+					"path": [
+						"api",
+						"vehicles",
+						"2"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
