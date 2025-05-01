@@ -38,6 +38,8 @@ const Navbar: React.FC = () => {
     dropdownOpen: "",
     mobileDropdownOpen: "",
   });
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [mobileUserOpen, setMobileUserOpen] = useState(false);
 
   const dropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const routerState = useRouterState();
@@ -145,19 +147,29 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="hidden sm:flex sm:items-center">
-            {user ? (
-              <>
-                <span className="text-gray-900 px-3 py-2 text-sm">
-                  Üdv, {user.name}!
-                </span>
-                <button
-                  onClick={logout}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700"
-                >
-                  Kijelentkezés
-                </button>
-              </>
-            ) : (
+          {user ? (
+  <div className="relative">
+    <button
+      onClick={() => setUserMenuOpen(open => !open)}
+      className="flex items-center text-gray-900 px-3 py-2 text-sm rounded-md hover:bg-gray-100"
+    >
+      Üdv, {user.name}! <ChevronDown size={16} className="ml-1" />
+    </button>
+    {userMenuOpen && (
+      <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
+        <Link to="/auth/profile" className="block px-4 py-2 hover:bg-gray-100">
+          Profilom
+        </Link>
+        <button
+          onClick={logout}
+          className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+        >
+          Kijelentkezés
+        </button>
+      </div>
+    )}
+  </div>
+) : (
               authItems.map((auth) => (
                 <Link
                   key={auth.title}
@@ -234,18 +246,35 @@ const Navbar: React.FC = () => {
           )}
 
           <div className="pt-4 pb-3 border-t border-gray-200">
-            {user ? (
-              <div className="flex flex-col items-center space-y-2">
-                <span className="text-gray-900 text-base">
-                  Üdv, {user.name}!
-                </span>
+          {user ? (
+              <>
                 <button
-                  onClick={logout}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md text-base font-medium hover:bg-red-700 w-full text-center"
+                  onClick={() => setMobileUserOpen(v => !v)}
+                  className="flex justify-between w-full px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md"
                 >
-                  Kijelentkezés
+                  <span>Üdv, {user.name}!</span>
+                  <ChevronDown
+                    size={16}
+                    className={`transform transition-transform ${mobileUserOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
-              </div>
+                {mobileUserOpen && (
+                  <div className="mt-2 space-y-1 px-3">
+                    <Link
+                      to="/auth/profile"
+                      className="block px-3 py-2 rounded-md text-gray-900 hover:bg-gray-100"
+                    >
+                      Profilom
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="w-full text-left px-3 py-2 rounded-md text-red-600 hover:bg-gray-100"
+                    >
+                      Kijelentkezés
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center space-y-2">
                 {authItems.map((auth) => (
