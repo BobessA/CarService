@@ -1,9 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useEffect, useState } from "react";
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { authGuard } from '../../utils/authGuard'
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import { Car, DollarSign, Package, Wrench, Users, ShoppingCart, TrendingUp } from "lucide-react";
 import "chart.js/auto";
 import { ReactNode } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import apiClient from "../../utils/apiClient";
 
 export const Route = createFileRoute('/admin/')({
   beforeLoad: () => authGuard([4]),
@@ -19,6 +22,22 @@ interface ChartContainerProps {
   children: ReactNode;
 }
 function RouteComponent() {
+    const { user } = useAuth();
+    const [carCount, setCarCount] = useState<number>(0);
+    useEffect(() => {
+      apiClient
+      .get<number>(`/vehicles/count`, user?.userId)
+      .then(setCarCount)
+      .catch(err => console.error("Hiba a jármű lekérdezésben:", err));
+  }, []);
+  
+    /*const [quoteCount, setQuoteCount] = useState<number>(0);
+    const [stockCount, setStockCount] = useState<number>(0);
+    const [workCount, setWorkCount] = useState<number>(0);
+    const [customerCount, setCustomerCount] = useState<number>(0);
+    const [invoiceCount, setInvoiceCount] = useState<number>(0);
+    const [profitCount, setProfitCount] = useState<number>(0);*/
+  
     return (
         <div className="p-6">
           {/* Kártyák */}
@@ -30,6 +49,7 @@ function RouteComponent() {
             <Card icon={<Users size={32} className="text-purple-500 mr-4" />} title="Ügyfélszám" data="230 ebben a hónapban" />
             <Card icon={<ShoppingCart size={32} className="text-orange-500 mr-4" />} title="Alkatrész rendelések" data="12 új rendelés" />
             <Card icon={<TrendingUp size={32} className="text-indigo-500 mr-4" />} title="Bevételek" data="$25,000" />
+            <Link to="/admin/cars"><Card icon={<Car size={32} className="text-indigo-500 mr-4" />} title="Regisztrált autók" data={carCount} /></Link>
           </div>
     
           {/* Grafikonok */}

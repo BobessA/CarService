@@ -196,5 +196,24 @@ namespace CarService.Controllers
                 return BadRequest(new GenericResponseDTO("Vehicles", "POST", ex.Message, null));
             }
         }
+
+        [HttpGet("count")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetCarQty(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var count = await _context.Vehicles.CountAsync(cancellationToken);
+                if (count == 0)
+                    return NoContent();
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new GenericResponseDTO("Vehicles", "GET", ex.Message, null));
+            }
+        }
     }
 }
