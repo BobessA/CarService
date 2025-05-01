@@ -14,6 +14,11 @@ export const menuItems: MenuItem[] = [
     title: "Adminisztráció",
     requiredRoles: [4],
     path: "/admin",
+    hasDropdown: true,
+    subItems: [
+      { title: "Vezérlőpult", path: "/admin/" },
+      { title: "Autók", path: "/admin/cars/" },
+    ],
   },
 ];
 

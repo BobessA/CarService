@@ -90,7 +90,7 @@ namespace CarService.DTOs
         /// <example>3</example>
         [Display(Name = "Üzemanyag típus")]
         [Required]
-        public string fuelType { get; set; }
+        public int fuelType { get; set; }
     }
 
     /// <summary>

@@ -53,7 +53,6 @@ namespace CarService.Controllers
             }
 
             List<VehiclesDTO> vehicles = await query
-                .Include(v => v.FuelType)
                 .Select(v => new VehiclesDTO
                 {
                     id = v.Id,
@@ -65,7 +64,7 @@ namespace CarService.Controllers
                     vin = v.Vin,
                     engineCode = v.EngineCode,
                     odometer = v.Odometer,
-                    fuelType = v.FuelType.Name 
+                    fuelType = v.FuelTypeId 
                 })
     .ToListAsync(cToken);
 

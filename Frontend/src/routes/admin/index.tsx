@@ -3,12 +3,21 @@ import { authGuard } from '../../utils/authGuard'
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import { Car, DollarSign, Package, Wrench, Users, ShoppingCart, TrendingUp } from "lucide-react";
 import "chart.js/auto";
+import { ReactNode } from "react";
 
 export const Route = createFileRoute('/admin/')({
   beforeLoad: () => authGuard([4]),
   component: RouteComponent,
 })
-
+interface CardProps {
+  icon: ReactNode;
+  title: string;
+  data: string | number;
+}
+interface ChartContainerProps {
+  title: string;
+  children: ReactNode;
+}
 function RouteComponent() {
     return (
         <div className="p-6">
@@ -41,7 +50,7 @@ function RouteComponent() {
       );
     };
     
-    const Card = ({ icon, title, data }) => (
+    const Card:React.FC<CardProps> = ({ icon, title,data }) => (
       <div className="bg-white p-4 shadow rounded-lg flex items-center">
         {icon}
         <div>
@@ -51,7 +60,7 @@ function RouteComponent() {
       </div>
     );
     
-    const ChartContainer = ({ title, children }) => (
+    const ChartContainer: React.FC<ChartContainerProps> = ({ title, children }) => (
       <div className="bg-white p-6 shadow rounded-lg">
         <h3 className="text-lg font-semibold mb-4">{title}</h3>
         {children}
