@@ -79,8 +79,6 @@ function RouteComponent() {
         <div className="mt-10 bg-white p-8 rounded-lg shadow-lg">
           {error && <div className="text-red-600 mb-4">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-6">
-
-            
             <div>
               <label className="block text-sm font-medium text-gray-700">Jármű</label>
               <select
@@ -96,8 +94,6 @@ function RouteComponent() {
                 ))}
               </select>
             </div>
-
-            
             <div>
               <label className="block text-sm font-medium text-gray-700">Szervíz típusa</label>
               <div className="mt-1 flex space-x-4">
@@ -127,8 +123,6 @@ function RouteComponent() {
                 </label>
               </div>
             </div>
-
-           
             {serviceType === 'special' ? (
               <div>
                 <label className="block text-sm font-medium text-gray-700">Probléma leírása</label>
