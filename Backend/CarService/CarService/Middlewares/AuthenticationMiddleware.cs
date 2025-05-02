@@ -12,7 +12,7 @@ namespace CarService.Middlewares
         //Adding a variable that contains paths where the site doesn't check for a token
         private readonly string[] _exemptedPaths = new[]
 {
-            "/Registration",
+            "/registration",
             "/login",
             "/swagger",
             "/favicon.ico"
@@ -28,14 +28,10 @@ namespace CarService.Middlewares
         {
             //First, we check if the requested path is in the exempted list,
             //and proceed with the request without token authentication if so.
-            if (ShouldExemptFromAuth(context.Request.Path))
-            {
-                await _next(context);
-                return;
-            }
 
             var path = context.Request.Path.ToString().ToLower();
-            if (path.EndsWith("/registration") || path.EndsWith("/login"))
+
+            if (ShouldExemptFromAuth(path))
             {
                 await _next(context);
                 return;
