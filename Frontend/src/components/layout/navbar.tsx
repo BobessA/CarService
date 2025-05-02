@@ -169,6 +169,12 @@ const Navbar: React.FC = () => {
                     >
                       Profilom
                     </Link>
+                    <Link
+                      to="/offers"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      Ajánlatok
+                    </Link>
                     <button
                       onClick={logout}
                       className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
@@ -292,6 +298,12 @@ const Navbar: React.FC = () => {
                       className="block px-3 py-2 rounded-md text-gray-900 hover:bg-gray-100"
                     >
                       Profilom
+                    </Link>
+                    <Link
+                      to="/offers"
+                      className="block px-3 py-2 rounded-md text-gray-900 hover:bg-gray-100"
+                    >
+                      Ajánlatok
                     </Link>
                     <button
                       onClick={logout}

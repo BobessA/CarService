@@ -163,7 +163,7 @@ namespace CarService.Controllers
 
             _context.Offers.Remove(offer);
             await _context.SaveChangesAsync(cToken);
-
+              
             return NoContent();
         }
 

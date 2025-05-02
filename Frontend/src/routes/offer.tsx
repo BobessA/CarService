@@ -1,10 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useEffect, FC } from "react";
+import { useState, useEffect } from "react";
 import { authGuard } from "../utils/authGuard";
 import { useAuth } from "../contexts/AuthContext";
 import apiClient from "../utils/apiClient";
 import { Vehicle } from "../models/Vehicle";
 import { useNavigate } from "@tanstack/react-router";
+import { OfferRegister } from '../models/OfferRegister';
 
 export const Route = createFileRoute('/offer')({
   beforeLoad: () => authGuard(),
@@ -50,17 +51,15 @@ function RouteComponent() {
     setSubmitting(true);
 
     try {
-      const formData = new FormData();
-      formData.append('vehicleId', selectedVehicle.toString());
-      formData.append('serviceType', serviceType);
-      if (serviceType === 'special') {
-        formData.append('issueDescription', issueDescription);
-      }
-      if (photo) {
-        formData.append('photo', photo);
-      }
+      // Todo: FOTÓÓó
+      var offer: OfferRegister = {
+        customerId: user?.userId || "",
+        vehicleId: selectedVehicle || 0,
+        statusId: 1,
+        issueDescription: issueDescription
+      };
 
-      await apiClient.post('/offers', formData, user?.userId);
+      await apiClient.post('/offers', offer, user?.userId);
       navigate({ to: '/thank-you' });
     } catch (err: any) {
       setError(err.message || 'Hiba az ajánlatkérés során');
@@ -154,9 +153,7 @@ function RouteComponent() {
 
                 </div>
              )
-            }
-
-          
+            }          
             <div>
               <label className="block text-sm font-medium text-gray-700">Fénykép csatolása (opcionális)</label>
               <input
