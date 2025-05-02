@@ -156,9 +156,14 @@ namespace CarService.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromHeader(Name = "Authorization")] string authorizationHeader, CancellationToken cToken)
         {
+            //Problem with the authorization header
             if (string.IsNullOrWhiteSpace(authorizationHeader) || !authorizationHeader.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase)) 
             {
-                return Unauthorized();
+                return BadRequest(new GenericResponseDTO(
+                    "Users/Login",
+                    "GET",
+                    "Authorization header is missing or not in Basic format",
+                    null));
             }
 
             var auth = authorizationHeader.Substring("Basic ".Length).Trim();
@@ -170,7 +175,11 @@ namespace CarService.Controllers
                 string userPassword = (Encoding.UTF8.GetString(Convert.FromBase64String(auth)));
                 if (userPassword.Split(':',2).Length != 2)
                 {
-                    return Unauthorized();
+                    return BadRequest(new GenericResponseDTO(
+                        "Users/Login",
+                        "GET",
+                        "Username or password missing",
+                        null));
                 }
 
                 email = userPassword.Split(':', 2)[0];
@@ -182,11 +191,19 @@ namespace CarService.Controllers
 
                 if (user == null || user.PasswordHash == null) 
                 {
-                    return Unauthorized();
+                    return BadRequest(new GenericResponseDTO(
+                        "Users/Login",
+                        "GET",
+                        "User does not exist in the db",
+                        null));
                 } 
                 else if (!AuthHelper.VerifyPassword(password, user.PasswordHash))
                 {
-                    return Unauthorized();
+                    return BadRequest(new GenericResponseDTO(
+                        "Users/Login",
+                        "GET",
+                        "Password is incorrect",
+                        null));
                 }
                 else 
                 {
