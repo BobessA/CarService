@@ -66,7 +66,7 @@ namespace CarService.Controllers
                     odometer = v.Odometer,
                     fuelType = v.FuelTypeId 
                 })
-    .ToListAsync(cToken);
+                .ToListAsync(cToken);
 
             if (vehicles == null || vehicles.Count == 0)
             {
@@ -197,22 +197,27 @@ namespace CarService.Controllers
             }
         }
 
+        /// <summary>
+        /// Járművek száma
+        /// </summary>
+        /// <param name="cToken"></param>
+        /// <returns></returns>
         [HttpGet("count")]
+        [ProducesResponseType(typeof(int),StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetCarQty(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetCarQty(CancellationToken cToken)
         {
             try
             {
-                var count = await _context.Vehicles.CountAsync(cancellationToken);
+                var count = await _context.Vehicles.CountAsync(cToken);
                 if (count == 0)
                     return NoContent();
                 return Ok(count);
             }
             catch (Exception ex)
             {
-                return BadRequest(new GenericResponseDTO("Vehicles", "GET", ex.Message, null));
+                return BadRequest(new GenericResponseDTO("Vehicles/Count", "GET", ex.Message, null));
             }
         }
     }

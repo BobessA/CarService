@@ -6,6 +6,7 @@ namespace CarService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ProductCategoryTreeController : ControllerBase
     {
         private readonly CarServiceContext _context;
