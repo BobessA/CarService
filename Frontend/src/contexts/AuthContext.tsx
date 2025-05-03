@@ -5,12 +5,16 @@ import User from "../models/User";
 
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(() => {
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
+
+  const [loginError, setLoginError] = useState(false);
 
   const register = async (name: string, email: string, password: string, phone: string) => {
       const userToRegister = { name, email, password, phone };
@@ -39,6 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
+      setLoginError(false);
       const base64Credentials = btoa(`${email}:${password}`);
       const response = await fetch('https://localhost:7197/api/Users/Login', {
         method: 'GET',
@@ -49,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (!response.ok) {
-        // throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
@@ -61,6 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }catch(error){
       console.error('Login error:', error);
       localStorage.removeItem('user');
+      setLoginError(true);
       //alert('Login failed. Please check your credentials.');
     };
   };
@@ -84,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login,register, logout, requireAuth }}>
+    <AuthContext.Provider value={{ user, login,register, logout, requireAuth, loginError }}>
       {children}
     </AuthContext.Provider>
   );

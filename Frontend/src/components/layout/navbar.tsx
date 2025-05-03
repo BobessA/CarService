@@ -12,12 +12,13 @@ export const menuItems: MenuItem[] = [
   { title: "Kapcsolat", path: "/contact" },
   {
     title: "Adminisztráció",
-    requiredRoles: [4],
+    requiredRoles: [1,2,4],
     path: "/admin",
     hasDropdown: true,
     subItems: [
       { title: "Vezérlőpult", path: "/admin/" },
       { title: "Autók", path: "/admin/cars/" },
+      { title: "Ajánlatkérések", path: "/admin/offers/" },
     ],
   },
   {

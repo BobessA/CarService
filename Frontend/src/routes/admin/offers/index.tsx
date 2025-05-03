@@ -9,7 +9,7 @@ import { Vehicle } from '../../../models/Vehicle';
 import { Status } from '../../../models/status';
 
 export const Route = createFileRoute('/admin/offers/')({
-    beforeLoad: () => authGuard([4]),
+    beforeLoad: () => authGuard([1,2,4]),
   component: RouteComponent,
 })
 

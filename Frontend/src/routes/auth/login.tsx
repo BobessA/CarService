@@ -9,10 +9,9 @@ export const Route = createFileRoute("/auth/login")({
 function RouteComponent() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const { login, loginError } = useAuth();
 
-  const { login } = useAuth();
-
-
+  
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     login(email,password);
@@ -52,6 +51,8 @@ function RouteComponent() {
             Bejelentkezés
           </button>
         </form>
+
+        {loginError && <div className="mt-4 text-center text-md text-red-600">Hibás felhasználónév, vagy jelszó!</div>}
 
         <p className="mt-4 text-center text-sm text-gray-600">
           Még nincs fiókod?{" "}

@@ -263,7 +263,7 @@ function RouteComponent() {
 }
 
 export const Route = createFileRoute('/admin/cars/')({
-  beforeLoad: () => authGuard([4]),
+  beforeLoad: () => authGuard([1,2,4]),
   component: RouteComponent,
 });
 

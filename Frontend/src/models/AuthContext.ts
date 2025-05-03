@@ -6,6 +6,7 @@ type AuthContextType = {
     register: (name: string, email: string, password: string, phone: string) => void;
     logout: () => void;
     requireAuth: (allowedRoles?: number[]) => void;
+    loginError: boolean;
   };
 
 export default AuthContextType;

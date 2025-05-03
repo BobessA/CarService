@@ -9,7 +9,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import apiClient from "../../utils/apiClient";
 
 export const Route = createFileRoute('/admin/')({
-  beforeLoad: () => authGuard([4]),
+  beforeLoad: () => authGuard([1,2,4]),
   component: RouteComponent,
 })
 interface CardProps {
