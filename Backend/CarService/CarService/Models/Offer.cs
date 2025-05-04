@@ -56,4 +56,6 @@ public partial class Offer
     [ForeignKey("VehicleId")]
     [InverseProperty("Offers")]
     public virtual Vehicle Vehicle { get; set; } = null!;
+
+    public virtual ICollection<OfferImage> OfferImages { get; set; } = new List<OfferImage>();
 }

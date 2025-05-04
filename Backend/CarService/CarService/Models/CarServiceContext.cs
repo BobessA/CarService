@@ -37,6 +37,9 @@ public partial class CarServiceContext : DbContext
 
     public virtual DbSet<Vehicle> Vehicles { get; set; }
 
+    public virtual DbSet<OfferImage> OfferImages { get; set; }
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<FuelType>(entity =>
@@ -183,6 +186,21 @@ public partial class CarServiceContext : DbContext
             .HasMax(2147483647L);
 
         OnModelCreatingPartial(modelBuilder);
+
+        modelBuilder.Entity<OfferImage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Offer_Images");
+
+            entity.Property(e => e.ImagePath)
+                .IsRequired()
+                .HasMaxLength(256);
+
+            entity.HasOne(e => e.Offer)
+                .WithMany(o => o.OfferImages)
+                .HasForeignKey(e => e.OfferId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_OfferImages_Offer");
+        });
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

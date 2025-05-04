@@ -3,23 +3,35 @@ const API_BASE = "https://localhost:7197/api";
 interface RequestOptions {
   method?: string;
   headers?: Record<string, string>;
-  body?: string;
+  body?: string | FormData;
 }
 
 async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${endpoint}`, options);
+  const isFormData = options.body instanceof FormData;
+
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method: options.method || "GET",
+    headers: isFormData
+      ? options.headers // ne állíts be Content-Type-ot FormData-nál!
+      : {
+          "Content-Type": "application/json",
+          ...options.headers,
+        },
+    body: options.body,
+  });
+
   const text = await res.text();
   if (!res.ok) {
-    const text = await res.text();
     throw new Error(`API request failed: ${res.status} ${res.statusText} - ${text}`);
   }
-  console.log(text);
+
   if (!text) {
     return [] as unknown as T;
-  }  
+  }
+
   return JSON.parse(text) as T;
 }
 
@@ -33,7 +45,6 @@ const apiClient = {
     request<T>(endpoint, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(body),
@@ -43,7 +54,6 @@ const apiClient = {
     request<T>(endpoint, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(body),
@@ -53,6 +63,13 @@ const apiClient = {
     request<void>(endpoint, {
       method: "DELETE",
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }),
+
+  postForm: <T>(endpoint: string, formData: FormData, token?: string): Promise<T> =>
+    request<T>(endpoint, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: formData,
     }),
 };
 

@@ -20,7 +20,7 @@ function RouteComponent() {
     const [selectedVehicle, setSelectedVehicle] = useState<number | "">("");
     const [serviceType, setServiceType] = useState<'general' | 'special'>('general');
     const [issueDescription, setIssueDescription] = useState<string>('');
-    const [photo, setPhoto] = useState<File | null>(null);
+    const [photos, setPhotos] = useState<File[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -49,17 +49,19 @@ function RouteComponent() {
     }
     setError(null);
     setSubmitting(true);
-
+  
     try {
-      // Todo: FOTÓÓó
-      var offer: OfferRegister = {
-        customerId: user?.userId || "",
-        vehicleId: selectedVehicle || 0,
-        statusId: 1,
-        issueDescription: issueDescription
-      };
-
-      await apiClient.post('/offers', offer, user?.userId);
+      const formData = new FormData();
+      formData.append('customerId', user?.userId || "");
+      formData.append('vehicleId', String(selectedVehicle));
+      formData.append('statusId', '1');
+      formData.append('issueDescription', issueDescription);
+  
+      photos.forEach((file) => {
+        formData.append('photos', file);
+      });
+  
+      await apiClient.postForm('/offers', formData, user?.userId);
       navigate({ to: '/thank-you' });
     } catch (err: any) {
       setError(err.message || 'Hiba az ajánlatkérés során');
@@ -67,6 +69,7 @@ function RouteComponent() {
       setSubmitting(false);
     }
   };
+  
 
   return (
     <section className="py-16 bg-gray-100">
@@ -352,7 +355,12 @@ function RouteComponent() {
               <input
                 type="file"
                 accept="image/*"
-                onChange={e => e.target.files && setPhoto(e.target.files[0])}
+                multiple
+                onChange={e => {
+                  if (e.target.files) {
+                    setPhotos(Array.from(e.target.files));
+                  }
+                }}
                 disabled={submitting}
                 className="mt-1"
               />

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace CarService.DTOs;
 
@@ -38,6 +40,9 @@ public class OfferDTO
 
     // Opcionálisan status név
     public string? statusName { get; set; }
+
+    public List<string>? imagePaths { get; set; }
+
 }
 
 /// <summary>
@@ -67,6 +72,11 @@ public class PostOfferRequest
 
     [StringLength(512)]
     public string? adminComment { get; set; }
+
+    /// <summary>
+    /// Opcionálisan csatolt kép (image formátum, max méretkorláttal)
+    /// </summary>
+    public List<IFormFile>? Photos { get; set; }
 }
 
 /// <summary>
@@ -82,4 +92,7 @@ public class UpdateOfferRequest
     public Guid? agentId { get; set; }
     public DateTime? appointmentDate { get; set; }
     public string? adminComment { get; set; }
+    public IFormFileCollection? Photos { get; set; }
+
+
 }
