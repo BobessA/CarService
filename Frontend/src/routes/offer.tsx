@@ -342,13 +342,6 @@ function RouteComponent() {
                       Diagnosztikai vizsgálat
                     </label>
                   </div>
-
-
-
-
-
-                  
-
                 </div>
               </div>
 

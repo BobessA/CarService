@@ -24,11 +24,16 @@ interface ChartContainerProps {
 function RouteComponent() {
     const { user } = useAuth();
     const [carCount, setCarCount] = useState<number>(0);
+    const [offerCount, setOfferCount] = useState<number>(0);
     useEffect(() => {
       apiClient
       .get<number>(`/vehicles/count`, user?.userId)
       .then(setCarCount)
       .catch(err => console.error("Hiba a jármű lekérdezésben:", err));
+      apiClient
+      .get<number>(`/offers/count`, user?.userId)
+      .then(setOfferCount)
+      .catch(err => console.error("Hiba az ajánlatok lekérdezésében:", err));
   }, []);
   
     /*const [quoteCount, setQuoteCount] = useState<number>(0);
@@ -43,10 +48,10 @@ function RouteComponent() {
           {/* Kártyák */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card icon={<Car size={32} className="text-blue-500 mr-4" />} title="Bejelentkezett autók" data="15 aktív" />
-            <Card icon={<DollarSign size={32} className="text-green-500 mr-4" />} title="Árajánlatok" data="7 függőben" />
+            <Link to="/admin/offers"><Card icon={<DollarSign size={32} className="text-green-500 mr-4" />} title="Árajánlatok" data={offerCount} /></Link>
             <Card icon={<Package size={32} className="text-yellow-500 mr-4" />} title="Raktár" data="120 alkatrész" />
             <Card icon={<Wrench size={32} className="text-red-500 mr-4" />} title="Munkafolyamatok" data="5 folyamatban" />
-            <Card icon={<Users size={32} className="text-purple-500 mr-4" />} title="Ügyfélszám" data="230 ebben a hónapban" />
+            <Link to="/admin/users"><Card icon={<Users size={32} className="text-purple-500 mr-4" />} title="Ügyfélszám" data="230 ebben a hónapban" /></Link>
             <Card icon={<ShoppingCart size={32} className="text-orange-500 mr-4" />} title="Alkatrész rendelések" data="12 új rendelés" />
             <Card icon={<TrendingUp size={32} className="text-indigo-500 mr-4" />} title="Bevételek" data="$25,000" />
             <Link to="/admin/cars"><Card icon={<Car size={32} className="text-indigo-500 mr-4" />} title="Regisztrált autók" data={carCount} /></Link>
