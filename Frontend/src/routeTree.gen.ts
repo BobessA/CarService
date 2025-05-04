@@ -22,6 +22,7 @@ import { Route as AdminIndexImport } from './routes/admin/index'
 import { Route as AuthRegisterImport } from './routes/auth/register'
 import { Route as AuthProfileImport } from './routes/auth/profile'
 import { Route as AuthLoginImport } from './routes/auth/login'
+import { Route as AdminProductsIndexImport } from './routes/admin/products/index'
 import { Route as AdminOffersIndexImport } from './routes/admin/offers/index'
 import { Route as AdminCarsIndexImport } from './routes/admin/cars/index'
 
@@ -90,6 +91,12 @@ const AuthProfileRoute = AuthProfileImport.update({
 const AuthLoginRoute = AuthLoginImport.update({
   id: '/auth/login',
   path: '/auth/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AdminProductsIndexRoute = AdminProductsIndexImport.update({
+  id: '/admin/products/',
+  path: '/admin/products/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -200,6 +207,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOffersIndexImport
       parentRoute: typeof rootRoute
     }
+    '/admin/products/': {
+      id: '/admin/products/'
+      path: '/admin/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -219,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/offers': typeof OffersIndexRoute
   '/admin/cars': typeof AdminCarsIndexRoute
   '/admin/offers': typeof AdminOffersIndexRoute
+  '/admin/products': typeof AdminProductsIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -235,6 +250,7 @@ export interface FileRoutesByTo {
   '/offers': typeof OffersIndexRoute
   '/admin/cars': typeof AdminCarsIndexRoute
   '/admin/offers': typeof AdminOffersIndexRoute
+  '/admin/products': typeof AdminProductsIndexRoute
 }
 
 export interface FileRoutesById {
@@ -252,6 +268,7 @@ export interface FileRoutesById {
   '/offers/': typeof OffersIndexRoute
   '/admin/cars/': typeof AdminCarsIndexRoute
   '/admin/offers/': typeof AdminOffersIndexRoute
+  '/admin/products/': typeof AdminProductsIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -270,6 +287,7 @@ export interface FileRouteTypes {
     | '/offers'
     | '/admin/cars'
     | '/admin/offers'
+    | '/admin/products'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -285,6 +303,7 @@ export interface FileRouteTypes {
     | '/offers'
     | '/admin/cars'
     | '/admin/offers'
+    | '/admin/products'
   id:
     | '__root__'
     | '/'
@@ -300,6 +319,7 @@ export interface FileRouteTypes {
     | '/offers/'
     | '/admin/cars/'
     | '/admin/offers/'
+    | '/admin/products/'
   fileRoutesById: FileRoutesById
 }
 
@@ -317,6 +337,7 @@ export interface RootRouteChildren {
   OffersIndexRoute: typeof OffersIndexRoute
   AdminCarsIndexRoute: typeof AdminCarsIndexRoute
   AdminOffersIndexRoute: typeof AdminOffersIndexRoute
+  AdminProductsIndexRoute: typeof AdminProductsIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -333,6 +354,7 @@ const rootRouteChildren: RootRouteChildren = {
   OffersIndexRoute: OffersIndexRoute,
   AdminCarsIndexRoute: AdminCarsIndexRoute,
   AdminOffersIndexRoute: AdminOffersIndexRoute,
+  AdminProductsIndexRoute: AdminProductsIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -357,7 +379,8 @@ export const routeTree = rootRoute
         "/admin/",
         "/offers/",
         "/admin/cars/",
-        "/admin/offers/"
+        "/admin/offers/",
+        "/admin/products/"
       ]
     },
     "/": {
@@ -398,6 +421,9 @@ export const routeTree = rootRoute
     },
     "/admin/offers/": {
       "filePath": "admin/offers/index.tsx"
+    },
+    "/admin/products/": {
+      "filePath": "admin/products/index.tsx"
     }
   }
 }

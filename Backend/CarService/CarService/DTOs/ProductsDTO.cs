@@ -99,10 +99,48 @@ namespace CarService.DTOs
     [Serializable]
     public class UpdateProductRequest
     {
+        /// <summary>
+        /// Cikkszám
+        /// </summary>
         [Required]
         public string productId { get; set; } = null!;
-        public double? sellingPrice { get; set; }
+
+        /// <summary>
+        /// Megnevezés
+        /// </summary>
+        [Required]
+        public string name { get; set; } = null!;
+        
+        /// <summary>
+        /// Gyártó
+        /// </summary>
+        public string? brand { get; set; }
+
+        /// <summary>
+        /// Beszerzési ár
+        /// </summary>
+        [Required]
+        public double purchasePrice { get; set; }
+
+        /// <summary>
+        /// Eladási ár
+        /// </summary>
+        [Required]
+        public double sellingPrice { get; set; }
+        
+        /// <summary>
+        /// Készletmennyiség
+        /// </summary>
         public double? stockQuantity { get; set; }
+
+        /// <summary>
+        /// Leírás
+        /// </summary>
         public string? description { get; set; }
+
+        /// <summary>
+        /// Termékkategória besorolások
+        /// </summary>
+        public int[]? categoryAssignments { get; set; }
     }
 }

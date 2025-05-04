@@ -96,9 +96,12 @@ namespace CarService.Controllers
             if (product == null)
                 return NotFound();
 
-            product.SellingPrice = request.sellingPrice ?? product.SellingPrice;
+            product.Name = request.name;
+            product.SellingPrice = request.sellingPrice;
+            product.Brand = request.brand;
+            product.PurchasePrice = request.purchasePrice;
             product.StockQuantity = request.stockQuantity ?? product.StockQuantity;
-            product.Description = request.description ?? product.Description;
+            product.Description = request.description;
 
             try
             {
