@@ -72,42 +72,65 @@ namespace CarService.Controllers
         /// <summary>
         /// Csoportbesorolás rögzítés
         /// </summary>
-        /// <param name="request">ProductCategoryAssignmentsDTO</param>
+        /// <param name="requests">List ProductCategoryAssignmentsDTO</param>
         /// <param name="cToken">CancellationToken</param>
         /// <returns>200, 400</returns>
         [HttpPost("Assignments")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddProductCategoryAssignments(ProductCategoryAssignmentsDTO request, CancellationToken cToken)
+        public async Task<IActionResult> AddProductCategoryAssignments(List<ProductCategoryAssignmentsDTO> requests, CancellationToken cToken)
         {
-            var category = await _context.ProductCategories
-                .FirstOrDefaultAsync(pc => pc.CategoryId == request.categoryId, cToken);
-
-            if (category == null)
+            if (requests == null || !requests.Any())
             {
-                return BadRequest(new GenericResponseDTO("ProductCategoryAssignments", "POST", "Category does not exists", null));
+                return BadRequest(new GenericResponseDTO("ProductCategoryAssignments", "POST", "Request is empty", null));
             }
 
-            var product = await _context.Products
+            var categoryIds = requests.Select(r => r.categoryId).Distinct().ToList();
+            var productIds = requests.Select(r => r.productId).Distinct().ToList();
+
+            var categories = await _context.ProductCategories
+                .Where(pc => categoryIds.Contains(pc.CategoryId))
+                .ToListAsync(cToken);
+
+            var products = await _context.Products
                 .Include(p => p.Categories)
-                .FirstOrDefaultAsync(p => p.ProductId == request.productId, cToken);
+                .Where(p => productIds.Contains(p.ProductId))
+                .ToListAsync(cToken);
 
-            if (product == null)
+            foreach (var req in requests)
             {
-                return BadRequest(new GenericResponseDTO("ProductCategoryAssignments", "POST", "Product does not exists", null));
+                var category = categories.FirstOrDefault(c => c.CategoryId == req.categoryId);
+                if (category == null)
+                {
+                    return BadRequest(new GenericResponseDTO("ProductCategoryAssignments", "POST", $"Category {req.categoryId} does not exists", null));
+                }
+
+                var product = products.FirstOrDefault(p => p.ProductId == req.productId);
+                if (product == null)
+                {
+                    return BadRequest(new GenericResponseDTO("ProductCategoryAssignments", "POST", $"Product {req.productId} does not exists", null));
+                }
+
+                if (product.Categories.Any(pc => pc.CategoryId == req.categoryId))
+                {
+                    return BadRequest(new GenericResponseDTO("ProductCategoryAssignments", "POST", $"This assignment already exists (product: {req.productId}, category: {req.categoryId})", null));
+                }
             }
 
-            if (product.Categories.Any(pc => pc.CategoryId == request.categoryId))
+            foreach (var req in requests)
             {
-                return BadRequest(new GenericResponseDTO("ProductCategoryAssignments", "POST", "This assignment already exists", null));
+                var category = categories.First(c => c.CategoryId == req.categoryId);
+                var product = products.First(p => p.ProductId == req.productId);
+                product.Categories.Add(category);
             }
-
-            product.Categories.Add(category);
-
             await _context.SaveChangesAsync(cToken);
 
-            await _context.Database.ExecuteSqlInterpolatedAsync(
-                $"EXEC AssignProductToCategory {request.productId}", cToken);
+            var distinctProductIds = requests.Select(r => r.productId).Distinct();
+            foreach (var productId in distinctProductIds)
+            {
+                await _context.Database.ExecuteSqlInterpolatedAsync(
+                    $"EXEC AssignProductToCategory {productId}", cToken);
+            }
 
             return Ok();
         }
