@@ -407,3 +407,12 @@ GO
 
 alter table Offers alter column agent_id UNIQUEIDENTIFIER NULL
 GO
+
+if not exists (select 1 from sys.objects where name='Offer_images' and type='U')
+	CREATE TABLE Offer_images (
+		id INT IDENTITY(1,1) PRIMARY KEY,
+		offer_id INT NOT NULL,
+		image_path NVARCHAR(512) NULL,
+		CONSTRAINT FK_Images_Offer FOREIGN KEY (offer_id) REFERENCES Offers(id)  
+	)
+GO
