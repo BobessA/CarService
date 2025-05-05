@@ -7,4 +7,5 @@ export type ProductData = {
     sellingPrice: number;
     stockQuantity: number | null;
     description: string | null;
+    categoryAssignments: number[] | null;
   }

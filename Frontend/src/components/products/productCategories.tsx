@@ -78,36 +78,6 @@ const ProductCategories: React.FC<Props> = ({categoryTree, selectedCategories, i
       });
   };
 
-  const buildFilteredCategoryTreeText = (
-    categories: ProductCategoryTreeData[],
-    targetCategoryIds: number[],
-    parentId: number | null = null,
-    level: number = 0
-  ): string => {
-    return categories
-      .filter((cat) => cat.parentId === parentId)
-      .map((cat) => {
-        const children = buildFilteredCategoryTreeText(
-          categories,
-          targetCategoryIds,
-          cat.categoryId,
-          level + 1
-        );
-        const isInTarget = targetCategoryIds.includes(cat.categoryId);
-
-        if (isInTarget || children.trim() !== "") {
-          const indent = "   ".repeat(level);
-          return `${indent}- ${cat.categoryName}\n${children}`;
-        }
-        return "";
-      })
-      .join("");
-  };
-
-  //const productCategoryIds = selectedCategories
-  //    .filter(assign => assign.productId === productId)
-  //    .map(assign => assign.categoryId);
-
   return (
     <div>
       <h3 className="text-lg font-medium mb-2">Termékkategóriák</h3>
