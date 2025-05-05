@@ -91,25 +91,61 @@ namespace CarService.Controllers
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> PutProduct([FromBody] UpdateProductRequest request, CancellationToken cToken)
         {
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == request.productId, cToken);
+            var product = await _context.Products
+                .Include(p => p.Categories)
+                .FirstOrDefaultAsync(p => p.ProductId == request.productId, cToken);
 
             if (product == null)
                 return NotFound();
 
-            product.Name = request.name;
-            product.SellingPrice = request.sellingPrice;
-            product.Brand = request.brand;
-            product.PurchasePrice = request.purchasePrice;
-            product.StockQuantity = request.stockQuantity ?? product.StockQuantity;
-            product.Description = request.description;
-
+            await using var transaction = await _context.Database.BeginTransactionAsync(cToken);
             try
             {
+                product.Name = request.name;
+                product.SellingPrice = request.sellingPrice;
+                product.Brand = request.brand;
+                product.PurchasePrice = request.purchasePrice;
+                product.StockQuantity = request.stockQuantity ?? product.StockQuantity;
+                product.Description = request.description;
+
+                var existingCategoryIds = product.Categories.Select(c => c.CategoryId).ToList();
+                var incomingCategoryIds = request.categoryAssignments ?? new int[0];
+
+                var categoriesToRemove = product.Categories
+                    .Where(pc => !incomingCategoryIds.Contains(pc.CategoryId))
+                    .ToList();
+
+                foreach (var category in categoriesToRemove)
+                {
+                    product.Categories.Remove(category);
+                }
+
+                var categoriesToAdd = incomingCategoryIds
+                    .Where(id => !existingCategoryIds.Contains(id))
+                    .ToList();
+
+                if (categoriesToAdd.Any())
+                {
+                    var categories = await _context.ProductCategories
+                        .Where(c => categoriesToAdd.Contains(c.CategoryId))
+                        .ToListAsync(cToken);
+
+                    foreach (var category in categories)
+                    {
+                        product.Categories.Add(category);
+                    }
+                }
+
                 await _context.SaveChangesAsync(cToken);
+                await _context.Database.ExecuteSqlInterpolatedAsync(
+                    $"EXEC AssignProductToCategory {product.ProductId}", cToken);
+                await transaction.CommitAsync(cToken);
+
                 return Ok();
-            }
+            } 
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cToken);
                 return BadRequest(new GenericResponseDTO("Products", "PUT", ex.Message, null));
             }
         }
