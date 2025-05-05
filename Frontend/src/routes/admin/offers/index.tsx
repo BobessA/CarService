@@ -19,7 +19,7 @@ function RouteComponent() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] =       useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [edits, setEdits] = useState<Record<number, { adminComment: string; statusId: number; appointmentDate: string }>>({});
 
@@ -64,14 +64,29 @@ function RouteComponent() {
   const handleSave = async (offer: OfferDTO) => {
     const edit = edits[offer.id];
     if (!edit) return;
+    
     const updatedOffer = { ...offer, ...edit, appointmentDate: edit.appointmentDate || null };
+  
+    // Létrehozunk egy FormData objektumot
+    const formData = new FormData();
+    
+    // Hozzáadjuk a mezőket a FormData-hoz
+    formData.append('id', updatedOffer.id.toString());
+    formData.append('statusId', updatedOffer.statusId.toString());
+    if (updatedOffer.agentId) formData.append('agentId', updatedOffer.agentId);
+    if (updatedOffer.appointmentDate) formData.append('appointmentDate', updatedOffer.appointmentDate);
+    if (updatedOffer.adminComment) formData.append('adminComment', updatedOffer.adminComment || '');
+  
     try {
-      await apiClient.put(`/Offers`, updatedOffer, user?.userId);
+      // FormData-val küldjük a PUT kérést
+      await apiClient.put(`/Offers`, formData, user?.userId);
+      
       const updated = await apiClient.get<OfferDTO[]>('/Offers', user?.userId);
       setOffers(updated.sort((a, b) => new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()));
       setExpanded(prev => { const nxt = new Set(prev); nxt.delete(offer.id); return nxt; });
       setEdits(prev => { const nxt = { ...prev }; delete nxt[offer.id]; return nxt; });
-    } catch {
+    } catch (error) {
+      console.error('Update error:', error);
       alert('Frissítési hiba');
     }
   };
@@ -125,6 +140,31 @@ function RouteComponent() {
                               <p><span className="font-medium">Probléma:</span> {offer.issueDescription || '-'}</p>
                               <p className="mt-1"><span className="font-medium">Agent ID:</span> {offer.agentId || '-'}</p>
                               <p className="mt-1"><span className="font-medium">Customer ID:</span> {offer.customerId}</p>
+
+
+                              <div className="mt-2">
+                                <span className="font-medium">Képek:</span>
+                                {offer.imagePaths && offer.imagePaths.length > 0 ? (
+                                  <div className="flex flex-wrap gap-4 mt-2">
+                                    {offer.imagePaths.map((imagePath, index) => (
+                                      <div key={index} className="border rounded p-1">
+                                        <img 
+                                          src={imagePath} 
+                                          alt={`Offer image ${index + 1}`} 
+                                          className="max-w-xs max-h-48 object-contain"
+                                          onError={(e) => {
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                          }}
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-gray-500 mt-1">Nincs megjelenítendő fotó.</p>
+                                )}
+                              </div>
+
+
                             </div>
                             <div>
                               <p><span className="font-medium">Admin megjegyzés:</span></p>

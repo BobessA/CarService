@@ -50,14 +50,19 @@ const apiClient = {
       body: JSON.stringify(body),
     }),
 
-  put: <T>(endpoint: string, body: unknown, token?: string): Promise<T> =>
-    request<T>(endpoint, {
+  put: <T>(endpoint: string, body: unknown, token?: string): Promise<T> => {
+    // Megállapítjuk, hogy FormData-t küldünk-e
+    const isFormData = body instanceof FormData;
+    
+    return request<T>(endpoint, {
       method: "PUT",
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify(body),
-    }),
+      // FormData esetén nem stringify-eljük, egyébként igen
+      body: isFormData ? body : JSON.stringify(body)
+    });
+  },
 
   delete: (endpoint: string, token?: string): Promise<void> =>
     request<void>(endpoint, {

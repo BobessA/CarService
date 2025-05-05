@@ -65,7 +65,9 @@ namespace CarService.Controllers
                     appointmentDate = o.AppointmentDate,
                     adminComment = o.AdminComment,
                     statusName = o.Status.Name,
-                    imagePaths = o.OfferImages.Select(img => img.ImagePath).ToList()
+                    imagePaths = o.OfferImages.Select(img =>
+                        $"{Request.Scheme}://{Request.Host}/{img.ImagePath.TrimStart('/')}"
+                        ).ToList()
                 })
                 .ToListAsync(cToken);
 

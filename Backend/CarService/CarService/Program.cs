@@ -49,7 +49,7 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowReactFrontend");
-
+app.UseStaticFiles();
 app.UseMiddleware<AuthenticationMiddleware>();
 app.UseAuthorization();
 

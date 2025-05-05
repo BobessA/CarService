@@ -10,4 +10,5 @@ export type OfferDTO = {
     appointmentDate: string | null;
     adminComment: string | null;
     statusName: string;
+    imagePaths?: string[];
   }

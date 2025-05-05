@@ -97,15 +97,25 @@ function RouteComponent() {
               ? 'border-blue-500'
               : 'border-green-500';
 
-            const handleAccept = async () => {
-              try {
-                await apiClient.put(`/Offers`, { id: offer.id, statusId: 3 }, user?.userId);
-                
-                setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, statusName: 'Elfogadott', statusId: 3 } : o));
-              } catch {
-                alert('Hiba az elfogadás során');
-              }
-            };
+              const handleAccept = async () => {
+                try {
+                  // Létrehozzuk a FormData objektumot
+                  const formData = new FormData();
+                  formData.append('id', offer.id.toString());
+                  formData.append('statusId', '3'); // Elfogadott állapot
+                  
+                  // FormData-val küldjük a PUT kérést
+                  await apiClient.put(`/Offers`, formData, user?.userId);
+                  
+                  // Frissítjük a lokális állapotot
+                  setOffers(prev => prev.map(o => 
+                    o.id === offer.id ? { ...o, statusName: 'Elfogadott', statusId: 3 } : o
+                  ));
+                } catch (error) {
+                  console.error('Elfogadási hiba:', error);
+                  alert('Hiba az elfogadás során');
+                }
+              };
 
             return (
               <div key={offer.id} className={`bg-white p-6 rounded-lg shadow-md border-l-4 ${statusColor}`}>  
@@ -118,6 +128,27 @@ function RouteComponent() {
                     <p><span className="font-medium">Jármű:</span> {vehicleMap[offer.vehicleId]}</p>
                     {offer.issueDescription && <p className="mt-1"><span className="font-medium">Probléma:</span> {offer.issueDescription}</p>}
                     <p className="mt-1"><span className="font-medium">Agent ID:</span> {offer.agentId || '-'}</p>
+                    <div className="mt-2">
+                                <span className="font-medium">Képek:</span>
+                                {offer.imagePaths && offer.imagePaths.length > 0 ? (
+                                  <div className="flex flex-wrap gap-4 mt-2">
+                                    {offer.imagePaths.map((imagePath, index) => (
+                                      <div key={index} className="border rounded p-1">
+                                        <img 
+                                          src={imagePath} 
+                                          alt={`Offer image ${index + 1}`} 
+                                          className="max-w-xs max-h-48 object-contain"
+                                          onError={(e) => {
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                          }}
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-gray-500 mt-1">Nincs megjelenítendő fotó.</p>
+                                )}
+                              </div>
                   </div>
                   <div>
                     <p><span className="font-medium">Állapot:</span> {offer.statusName}</p>
