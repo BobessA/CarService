@@ -13,15 +13,15 @@ namespace CarService.Services
             _context = context;
         }
 
-        public async Task<bool> IsValidTokenAsync(string token)
+        public async Task<(bool isValid, User? authUser)> IsValidTokenAsync(string token)
         {
             if (!Guid.TryParse(token, out var parsedToken))
             {
-                return false;
+                return (false, null);
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == parsedToken);
-            return user != null;
+            return (user != null, user);
         }
     }
 }

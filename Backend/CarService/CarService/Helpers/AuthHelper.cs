@@ -1,7 +1,4 @@
-﻿using CarService.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Net.NetworkInformation;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace CarService.Helpers
@@ -29,5 +26,15 @@ namespace CarService.Helpers
             return hashOfInput == storedHash;
         }
 
+        /// <summary>
+        /// Jogosultságok
+        /// </summary>
+        public enum UserRole
+        {
+            Mechanic = 1,
+            Owner = 2,
+            Customer = 3,
+            Admin = 4,
+        }
     }
 }

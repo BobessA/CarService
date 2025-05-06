@@ -2,7 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using CarService.Models;
 using CarService.DTOs;
-using CarService.Helpers;
+using CarService.Attributes;
+using static CarService.Helpers.AuthHelper;
 
 namespace CarService.Controllers
 {
@@ -22,10 +23,15 @@ namespace CarService.Controllers
         /// <summary>
         /// Termékek lekérdezése
         /// </summary>
+        /// <param name="productId">Cikkszám</param>
+        /// <param name="name">Termék megnevezése</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>ProductsDTO List, 204, 400</returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<ProductsDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> GetProducts(string? productId, string? name, CancellationToken cToken)
         {
             var query = _context.Products.AsQueryable();
@@ -57,9 +63,13 @@ namespace CarService.Controllers
         /// <summary>
         /// Termék létrehozása
         /// </summary>
+        /// <param name="request">PostProductRequest</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>200, 400</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> PostProduct([FromBody] PostProductRequest request, CancellationToken cToken)
         {
             if (await _context.Products.AnyAsync(p => p.ProductId == request.productId, cToken))
@@ -86,9 +96,13 @@ namespace CarService.Controllers
         /// <summary>
         /// Termék frissítése
         /// </summary>
+        /// <param name="request">UpdateProductRequest</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>200, 400</returns>
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> PutProduct([FromBody] UpdateProductRequest request, CancellationToken cToken)
         {
             var product = await _context.Products
@@ -153,10 +167,14 @@ namespace CarService.Controllers
         /// <summary>
         /// Termék törlése
         /// </summary>
+        /// <param name="productId">Cikkszám</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>204, 400, 404</returns>
         [HttpDelete("{productId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> DeleteProduct(string productId, CancellationToken cToken)
         {
             var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId, cToken);
@@ -179,9 +197,16 @@ namespace CarService.Controllers
             }
         }
 
+        /// <summary>
+        /// Termékek száma
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>200, 204, 400</returns>
         [HttpGet("count")]
+        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> GetProductCount(CancellationToken cancellationToken)
         {
             try

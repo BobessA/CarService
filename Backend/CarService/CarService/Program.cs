@@ -31,7 +31,7 @@ builder.Services.AddSwaggerGen(o =>
 {
     o.SwaggerDoc("v1", new OpenApiInfo
     {
-        Version = "v1.0.3",
+        Version = "v1.0.4",
         Title = "Car Service",
         Description = "Backend",
     });
@@ -51,6 +51,7 @@ app.UseHttpsRedirection();
 app.UseCors("AllowReactFrontend");
 app.UseStaticFiles();
 app.UseMiddleware<AuthenticationMiddleware>();
+app.UseMiddleware<AuthorizationMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

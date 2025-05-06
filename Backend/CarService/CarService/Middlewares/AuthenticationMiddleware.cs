@@ -1,7 +1,5 @@
-﻿using CarService.Helpers;
-using CarService.Models;
-using CarService.Services;
-using Microsoft.EntityFrameworkCore;
+﻿using CarService.Services;
+using System.Security.Claims;
 
 namespace CarService.Middlewares
 {
@@ -50,11 +48,23 @@ namespace CarService.Middlewares
             {
                 var tokenValidationService = scope.ServiceProvider.GetRequiredService<TokenValidationService>();
 
-                if (!await tokenValidationService.IsValidTokenAsync(token))
+                var (isValid, authUser) = await tokenValidationService.IsValidTokenAsync(token);
+                if (!isValid)
                 {
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await context.Response.WriteAsync("Invalid token.");
                     return;
+                } else if (authUser != null)
+                {
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.Role, authUser.RoleId.ToString()),
+                        new Claim(ClaimTypes.Name, authUser.Name),
+                        new Claim(ClaimTypes.NameIdentifier, authUser.Id.ToString())
+                    };
+
+                    var identity = new ClaimsIdentity(claims);
+                    context.User = new ClaimsPrincipal(identity);
                 }
             }
 
