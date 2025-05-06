@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { eventAuthGuard } from '../../utils/authGuard'
 import { ProductData } from "../../models/ProductData";
 import { ProductCategoryTreeData } from "../../models/ProductCategoryTreeData";
 import { validateProductData } from "../../validations/productDataValidation";
@@ -20,9 +21,10 @@ const ProductForm: React.FC<Props> = (props) => {
     productType: 'P',
     categoryAssignments: []
   }
+  
   const [newProduct, setNewProduct] = useState<ProductData>(initialProduct);
   const [showForm, setShowForm] = React.useState(false);
-  const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,18 +49,35 @@ const ProductForm: React.FC<Props> = (props) => {
     setErrors({});
   }
 
+  const handleClick = () => {
+    const hasPermission = eventAuthGuard([2, 4]);
+    if (hasPermission) {
+      setErrors({});
+    } else {
+      setErrors({'permission' : 'Nincs jogod új termék rögzítéséhez!'});
+    }
+    return hasPermission;
+  }
+
   return (
     <section className="px-2 py-4 bg-gray-50 min-h-screen">
       <div className="bg-white rounded-lg shadow p-4">
         <h3 className="text-xl font-bold mb-4">Új termék Rögzítése</h3>
         {!showForm ? (
-          <div className="flex justify-between items-center mb-4">
-            <button 
-              onClick={() => setShowForm(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-            >
-              Termék hozzáadása
-            </button>
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <button 
+                onClick={() => {
+                  const hasPermission = handleClick();
+                  if (!hasPermission) return;
+                  setShowForm(true);
+                }}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+              >
+                Termék hozzáadása
+              </button>
+            </div>
+            {errors.permission && <p className="text-red-500 text-sm mt-1">{errors.permission}</p>}
           </div>
         ) : (   
         <form 

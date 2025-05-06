@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { eventAuthGuard } from '../../utils/authGuard'
 import { ProductData } from "../../models/ProductData";
 import { ProductCatAssignmentData } from "../../models/ProductCatAssignmentData";
 import { ProductCategoryTreeData } from "../../models/ProductCategoryTreeData";
@@ -126,6 +127,16 @@ const ProductTable: React.FC<Props> = (props) => {
     props.onSaveProduct(tempProducts.productId, tempProducts, currentAssignments);
   }
 
+  const handleClick = (errorMessage: string) => {
+      const hasPermission = eventAuthGuard([2, 4]);
+      if (hasPermission) {
+        setErrors({});
+      } else {
+        setErrors({'permission' : errorMessage});
+      }
+      return hasPermission;
+  }
+
   return (
     <section className="py-16 bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto px-6">
@@ -180,10 +191,7 @@ const ProductTable: React.FC<Props> = (props) => {
                                     ? "border-b-2 border-blue-500 text-blue-500"
                                     : "text-gray-500"
                                 }`} onClick={() =>
-                                  handleTabChange(
-                                    product.productId,
-                                    "categories"
-                                  )
+                                  handleTabChange(product.productId, "categories")
                                 } >
                                 Termékkategóriák
                               </button>
@@ -194,6 +202,8 @@ const ProductTable: React.FC<Props> = (props) => {
                                   <button
                                     className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
                                     onClick={() => {
+                                      const hasPermission = handleClick('Nincs jogod termékek szerkesztéséhez!');
+                                      if (!hasPermission) return;
                                       toggleEditing(product.productId, true);
                                     }} >
                                     Szerkesztés
@@ -201,6 +211,8 @@ const ProductTable: React.FC<Props> = (props) => {
                                   <button
                                     className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700"
                                     onClick={() => {
+                                      const hasPermission = handleClick('Nincs jogod termékek törléséhez!');
+                                      if (!hasPermission) return;
                                       props.onDeleteProduct(product.productId);
                                     }} >
                                     Törlés
@@ -212,6 +224,8 @@ const ProductTable: React.FC<Props> = (props) => {
                                     className="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700"
                                     onClick={() => {
                                       const updatedProduct = tempProducts[product.productId];
+                                      const hasPermission = handleClick('Nincs jogod termékek szerkesztéséhez!');
+                                      if (!hasPermission) return;
                                       handleSubmit(updatedProduct);
                                     }} >
                                     Mentés
@@ -245,6 +259,7 @@ const ProductTable: React.FC<Props> = (props) => {
                               )}
                             </div>
                           </div>
+                          {errors.permission && <p className="text-red-500 text-sm mt-1">{errors.permission}</p>}
                           {(activeTabs[product.productId] ?? "product") ===
                           "product" ? (
                             <ProductDetails

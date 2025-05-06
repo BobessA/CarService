@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
+import { authGuard, eventAuthGuard } from '../../../utils/authGuard'
 import apiClient from "../../../utils/apiClient";
 import { ProductData } from "../../../models/ProductData";
 import { ProductCatAssignmentData } from "../../../models/ProductCatAssignmentData";
@@ -8,7 +9,10 @@ import { ProductCategoryTreeData } from "../../../models/ProductCategoryTreeData
 import ProductTable from "../../../components/products/productTable";
 import ProductForm from "../../../components/products/productForm";
 
-export const Route = createFileRoute("/admin/products/")({component: RouteComponent,});
+export const Route = createFileRoute("/admin/products/")({
+  beforeLoad: () => authGuard([1,2,4]),
+  component: RouteComponent,
+});
 
 function RouteComponent() {
   const { user } = useAuth();
@@ -77,7 +81,7 @@ function RouteComponent() {
       await apiClient.put("/Products", apiPayloadProducts, user?.userId);
       console.log("Termék sikeresen mentve:", productId);
     } catch (error) {
-      console.error("Hiba történt a termék mentésekor", error);
+      console.error("Hiba történt a termék aadatainak rögzítésekor", error);
     }
     updateFromBackend();
   };
@@ -145,7 +149,8 @@ function RouteComponent() {
           }
           onDeleteProduct={(productId) => {
             deleteProduct(productId)}
-          }/>
+          }
+          />
       </div>
 
       {/* Új cikk form */}
