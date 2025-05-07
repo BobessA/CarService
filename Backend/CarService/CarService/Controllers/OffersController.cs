@@ -4,8 +4,9 @@ using CarService.Models;
 using CarService.DTOs;
 using CarService.Helpers;
 
-namespace CarService.Controllers
-{
+
+namespace CarService.Controllers{
+
     [Route("api/Offers")]
     [ApiController]
     [Consumes("application/json")]
@@ -194,6 +195,11 @@ namespace CarService.Controllers
             offer.AppointmentDate = request.appointmentDate ?? offer.AppointmentDate;
             offer.AdminComment = request.adminComment ?? offer.AdminComment;
 
+            // Státusz változás ellenőrzése
+            bool isBeingAccepted = request.statusId.HasValue &&
+                                 request.statusId.Value == 3 &&
+                                 offer.StatusId != 3;
+
             // --- ÚJ képek mentése, ha vannak ---
             if (request.Photos != null && request.Photos.Count > 0)
             {
@@ -238,6 +244,22 @@ namespace CarService.Controllers
 
                     await _context.OfferImages.AddAsync(image, cToken);
                 }
+            }
+
+            //Ha a változó true, akkor készít egy orderHeader-t az offerből
+            if (isBeingAccepted)
+            {
+                var newOrderHeader = new OrdersHeader
+                {
+                    OfferId = offer.Id,
+                    CustomerId = offer.CustomerId,
+                    VehicleId = offer.VehicleId,
+                    OrderDate = offer.RequestDate,
+                    Comment = offer.AdminComment,
+                    StatusId = 3, // "Elfogadott" állapot
+                };
+                Console.WriteLine($"OrdersHeaders: {_context.OrdersHeaders.Local.Count()} új entitás van mentés előtt");
+                await _context.OrdersHeaders.AddAsync(newOrderHeader, cToken);
             }
 
             try

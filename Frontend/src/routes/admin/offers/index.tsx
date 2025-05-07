@@ -47,7 +47,7 @@ function RouteComponent() {
   }, [vehicles]);
 
   const getNextStatuses = (currentId: number): Status[] => {
-    const mainSeq = [1, 2, 3, 6, 7, 8, 4];
+    const mainSeq = [1, 2, 3];
     if (currentId === 5) {
       const next = statuses.find(s => s.id === 2);
       return next ? [next] : [];
