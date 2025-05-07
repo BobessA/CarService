@@ -47,7 +47,7 @@ function RouteComponent() {
         <div className="p-6">
           {/* Kártyák */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card icon={<Car size={32} className="text-blue-500 mr-4" />} title="Bejelentkezett autók" data="15 aktív" />
+            <Link to="/admin/orders"><Card icon={<Car size={32} className="text-blue-500 mr-4" />} title="Bejelentkezett autók" data="15 aktív" /></Link>
             <Link to="/admin/offers"><Card icon={<DollarSign size={32} className="text-green-500 mr-4" />} title="Árajánlatok" data={offerCount+" függőben"} /></Link>
             <Link to="/admin/products"><Card icon={<Package size={32} className="text-yellow-500 mr-4" />} title="Raktár" data="120 alkatrész" /></Link>
             <Card icon={<Wrench size={32} className="text-red-500 mr-4" />} title="Munkafolyamatok" data="5 folyamatban" />
