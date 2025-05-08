@@ -190,15 +190,15 @@ namespace CarService.Controllers{
             if (request.agentId.HasValue && !await _context.Users.AnyAsync(a => a.Id == request.agentId, cToken))
                 return BadRequest(new GenericResponseDTO("Offers", "PUT", "Invalid agent ID", null));
 
-            offer.StatusId = request.statusId ?? offer.StatusId;
-            offer.AgentId = request.agentId ?? offer.AgentId;
-            offer.AppointmentDate = request.appointmentDate ?? offer.AppointmentDate;
-            offer.AdminComment = request.adminComment ?? offer.AdminComment;
-
             // Státusz változás ellenőrzése
             bool isBeingAccepted = request.statusId.HasValue &&
                                  request.statusId.Value == 3 &&
                                  offer.StatusId != 3;
+
+            offer.StatusId = request.statusId ?? offer.StatusId;
+            offer.AgentId = request.agentId ?? offer.AgentId;
+            offer.AppointmentDate = request.appointmentDate ?? offer.AppointmentDate;
+            offer.AdminComment = request.adminComment ?? offer.AdminComment;
 
             // --- ÚJ képek mentése, ha vannak ---
             if (request.Photos != null && request.Photos.Count > 0)
