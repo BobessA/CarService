@@ -209,7 +209,7 @@ namespace CarService.Controllers{
                                  offer.StatusId != 3;
 
             offer.StatusId = request.statusId ?? offer.StatusId;
-            offer.AgentId = request.agentId ?? offer.AgentId;
+            offer.AgentId = offer.AgentId ?? request.agentId; // az első módosító ügyintéző lesz az ajánlat és rendelés ügyintézője
             offer.AppointmentDate = request.appointmentDate ?? offer.AppointmentDate;
             offer.AdminComment = request.adminComment ?? offer.AdminComment;
 
