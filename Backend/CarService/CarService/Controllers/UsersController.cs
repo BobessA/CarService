@@ -6,6 +6,7 @@ using CarService.Helpers;
 using System.Text;
 using CarService.Attributes;
 using static CarService.Helpers.AuthHelper;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CarService.Controllers
 {
@@ -107,6 +108,57 @@ namespace CarService.Controllers
         }
 
         /// <summary>
+        /// User adatok rögzítése regisztráció nélkül
+        /// </summary>
+        /// <param name="request">PostUserRequest</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>200, 404, 400</returns>
+        [HttpPost]
+        [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner)]
+        public async Task<IActionResult> PostUser([FromBody] PostUserRequest request, CancellationToken cToken)
+        {
+            if (await _context.Users.AnyAsync(u => u.Email == request.email, cToken))
+            {
+                return BadRequest(new GenericResponseDTO("Users", "POST", "Already registered user", null));
+            }
+
+            try
+            {
+                var user = new User
+                {
+                    Name = request.name,
+                    Discount = request.discount,
+                    RoleId = 3,
+                    Phone = request.phone,
+                    Email = request.email,
+                };
+
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync(cToken);
+
+                var newUser = await _context.Users
+                .Select(u => new UserDTO
+                {
+                    userId = u.Id,
+                    name = u.Name,
+                    email = u.Email,
+                    phone = u.Phone,
+                    roleId = u.RoleId,
+                    discount = u.Discount,
+                })
+                .FirstOrDefaultAsync(cToken);
+
+                return Ok(newUser);
+
+            } catch (Exception ex)
+            {
+                return BadRequest(new GenericResponseDTO("Users", "POST", ex.Message, null));
+            }
+        }
+
+        /// <summary>
         /// Regisztráció
         /// </summary>
         /// <param name="request">RegistrationRequest</param>
@@ -119,7 +171,7 @@ namespace CarService.Controllers
         {
             if (await _context.Users.AnyAsync(u => u.Email == request.email && u.PasswordHash != null, cToken))
             {
-                return BadRequest(new GenericResponseDTO("Users/Registration", "GET", "Already registered user", null));
+                return BadRequest(new GenericResponseDTO("Users/Registration", "POST", "Already registered user", null));
             } 
             else if (await _context.Users.AnyAsync(u => u.Email == request.email, cToken))
             {

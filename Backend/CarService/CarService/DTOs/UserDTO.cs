@@ -210,4 +210,45 @@ namespace CarService.DTOs
         [Display(Name = "Állandó kedvezmény százalék")]
         public short? discount { get; set; }
     }
+
+    /// <summary>
+    /// Felhasználó rögzítése regisztráció nélkül
+    /// </summary>
+    [Serializable]
+    public class PostUserRequest
+    {
+        /// <summary>
+        /// E-mail cím
+        /// </summary>
+        /// <example>teszt@teszt.hu</example>
+        [Required]
+        [Display(Name = "E-mail cím")]
+        [StringLength(128)]
+        public string email { get; set; }
+
+        /// <summary>
+        /// Személynév
+        /// </summary>
+        /// <example>Nagy István</example>
+        [Required]
+        [Display(Name = "Személynév")]
+        [StringLength(128)]
+        public string name { get; set; }
+
+        /// <summary>
+        /// Telefonszám
+        /// </summary>
+        /// <example>069066666666</example>
+        [Display(Name = "Telefonszám")]
+        [StringLength(64)]
+        public string? phone { get; set; }
+
+        /// <summary>
+        /// Állandó kedvezmény százalék
+        /// </summary>
+        /// <example>10</example>
+        [Required]
+        [Display(Name = "Állandó kedvezmény százalék")]
+        public short? discount { get; set; }
+    }
 }
