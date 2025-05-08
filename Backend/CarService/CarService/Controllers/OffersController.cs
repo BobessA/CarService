@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using CarService.Models;
 using CarService.DTOs;
 using CarService.Helpers;
+using CarService.Attributes;
+using static CarService.Helpers.AuthHelper;
 
 
 namespace CarService.Controllers{
@@ -23,10 +25,16 @@ namespace CarService.Controllers{
         /// <summary>
         /// Ajánlatok lekérése
         /// </summary>
+        /// <param name="offerId">Offers.id</param>
+        /// <param name="customerId">Users.id</param>
+        /// <param name="statusId">Statuses.id</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>OfferDTO List, 204, 404</returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<OfferDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> GetOffers(int? offerId, string? customerId, int? statusId, CancellationToken cToken)
         {
             var query = _context.Offers
@@ -78,15 +86,17 @@ namespace CarService.Controllers{
             return Ok(offers);
         }
 
-
-
         /// <summary>
         /// Új ajánlat létrehozása
         /// </summary>
+        /// <param name="request">PostOfferRequest</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>200, 400</returns>
         [HttpPost]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> PostOffer([FromForm] PostOfferRequest request, CancellationToken cToken)
         {
             if (!await _context.Users.AnyAsync(u => u.Id == request.customerId, cToken))
@@ -166,15 +176,18 @@ namespace CarService.Controllers{
             return Ok();
         }
 
-
         /// <summary>
         /// Ajánlat módosítása
         /// </summary>
+        /// <param name="request">UpdateOfferRequest</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>200, 400, 404</returns>
         [HttpPut]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> PutOffer([FromForm] UpdateOfferRequest request, CancellationToken cToken)
         {
             var offer = await _context.Offers
@@ -277,10 +290,14 @@ namespace CarService.Controllers{
         /// <summary>
         /// Ajánlat törlése
         /// </summary>
+        /// <param name="id">Offers.id</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>204, 400, 404</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> DeleteOffer(int id, CancellationToken cToken)
         {
             var offer = await _context.Offers

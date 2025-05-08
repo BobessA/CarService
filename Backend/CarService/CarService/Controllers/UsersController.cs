@@ -4,6 +4,8 @@ using CarService.Models;
 using CarService.DTOs;
 using CarService.Helpers;
 using System.Text;
+using CarService.Attributes;
+using static CarService.Helpers.AuthHelper;
 
 namespace CarService.Controllers
 {
@@ -30,6 +32,7 @@ namespace CarService.Controllers
         [ProducesResponseType(typeof(List<UserDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> GetUsers(string? userId, CancellationToken cToken)
         {
             var query = _context.Users.AsQueryable();
@@ -76,6 +79,7 @@ namespace CarService.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> PutUser([FromBody] UpdateUserRequest request, CancellationToken cToken)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.userId, cToken);

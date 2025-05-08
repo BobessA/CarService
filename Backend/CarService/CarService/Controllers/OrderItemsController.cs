@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using CarService.Models;
 using CarService.DTOs;
 using CarService.Helpers;
+using CarService.Attributes;
+using static CarService.Helpers.AuthHelper;
 
 namespace CarService.Controllers
 {
@@ -25,11 +27,12 @@ namespace CarService.Controllers
         /// <param name="orderId">OrdersHeader.id</param>
         /// <param name="productId">Product.product_id</param>
         /// <param name="cToken">CancellationToken</param>
-        /// <returns>OrderItemDTO lista</returns>
+        /// <returns>OrderItemDTO list, 204, 400</returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<OrderItemDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> GetOrderItems(int? orderId, string? productId, CancellationToken cToken)
         {
             var query = _context.OrderItems.AsQueryable();
@@ -67,9 +70,13 @@ namespace CarService.Controllers
         /// <summary>
         /// Rendelés tétel rögzítése
         /// </summary>
+        /// <param name="request">PostOrderItemRequest</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>200, 400</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> PostOrderItem([FromBody] PostOrderItemRequest request, CancellationToken cToken)
         {
             if (!await _context.OrdersHeaders.AnyAsync(o => o.Id == request.orderId, cToken))
@@ -98,10 +105,14 @@ namespace CarService.Controllers
         /// <summary>
         /// Rendelés tétel módosítása
         /// </summary>
+        /// <param name="request">UpdateOrderItemRequest</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>200, 400, 404</returns>
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> PutOrderItem([FromBody] UpdateOrderItemRequest request, CancellationToken cToken)
         {
             var item = await _context.OrderItems.FirstOrDefaultAsync(i => i.Id == request.id, cToken);
@@ -129,10 +140,14 @@ namespace CarService.Controllers
         /// <summary>
         /// Rendelés tétel törlése
         /// </summary>
+        /// <param name="id">OrderItem.id</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>200, 400, 404</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> DeleteOrderItem(int id, CancellationToken cToken)
         {
             var item = await _context.OrderItems.FirstOrDefaultAsync(i => i.Id == id, cToken);

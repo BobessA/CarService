@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CarService.Models;
-using System.Text.Json.Serialization;
 using CarService.DTOs;
-using Azure.Core;
+using CarService.Attributes;
+using static CarService.Helpers.AuthHelper;
 
 namespace CarService.Controllers
 {
@@ -31,6 +31,7 @@ namespace CarService.Controllers
         [ProducesResponseType(typeof(List<ProductCategoryAssignmentsDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> GetProductCategoryAssignments(string? productId, int? categoryId, CancellationToken cToken)
         {
             var query = _context.Products
@@ -78,6 +79,7 @@ namespace CarService.Controllers
         [HttpPost("Assignments")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> AddProductCategoryAssignments(List<ProductCategoryAssignmentsDTO> requests, CancellationToken cToken)
         {
             if (requests == null || !requests.Any())
@@ -146,6 +148,7 @@ namespace CarService.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> DeleteProductCategoryAssignment(int categoryId, string productId, CancellationToken cToken)
         {
             var product = await _context.Products
@@ -184,11 +187,12 @@ namespace CarService.Controllers
         /// Termékcsoport fa
         /// </summary>
         /// <param name="cToken">CancellationToken</param>
-        /// <returns>204, 400, 204</returns>
+        /// <returns>ProductCategoryTreeDTO List, 400, 204</returns>
         [HttpGet("CategoryTree")]
         [ProducesResponseType(typeof(List<ProductCategoryTreeDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> GetProductCategoryTree(CancellationToken cToken)
         {
             var tree = await _context.ProductCategoryTrees.ToListAsync(cToken);

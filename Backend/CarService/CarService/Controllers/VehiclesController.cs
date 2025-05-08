@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using CarService.Models;
 using CarService.DTOs;
-using CarService.Helpers;
-using Azure.Core;
+using CarService.Attributes;
+using static CarService.Helpers.AuthHelper;
 
 namespace CarService.Controllers
 {
@@ -31,6 +31,7 @@ namespace CarService.Controllers
         [ProducesResponseType(typeof(List<VehiclesDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> GetVehicles(int? vehicleId, string? userId, CancellationToken cToken)
         {
             var query = _context.Vehicles.AsQueryable();
@@ -85,6 +86,7 @@ namespace CarService.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> PostVehicle([FromBody] PostVehicleRequest request, CancellationToken cToken)
         {
             if (!await _context.Users.AnyAsync(u => u.Id == request.ownerId, cToken))
@@ -126,6 +128,7 @@ namespace CarService.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> PutVehicle([FromBody] UpdateVehicleRequest request, CancellationToken cToken)
         {
             var vehicle = await _context.Vehicles.FirstOrDefaultAsync(u => u.Id == request.id, cToken);
@@ -165,6 +168,7 @@ namespace CarService.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> DeleteVehicle(int id, CancellationToken cToken)
         {
             var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.Id == id, cToken);
@@ -206,6 +210,7 @@ namespace CarService.Controllers
         [ProducesResponseType(typeof(int),StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> GetCarQty(CancellationToken cToken)
         {
             try

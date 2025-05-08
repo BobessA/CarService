@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using CarService.Models;
 using CarService.DTOs;
+using CarService.Attributes;
+using static CarService.Helpers.AuthHelper;
 
 namespace CarService.Controllers
 {
@@ -18,10 +20,16 @@ namespace CarService.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Jogosultságok
+        /// </summary>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>RolesDTO List, 404</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(RolesDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<RolesDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetRoles()
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
+        public async Task<IActionResult> GetRoles(CancellationToken cToken)
         {
             var roles = await _context.Roles
                 .Select(r => new RolesDTO

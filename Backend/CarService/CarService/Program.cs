@@ -31,7 +31,7 @@ builder.Services.AddSwaggerGen(o =>
 {
     o.SwaggerDoc("v1", new OpenApiInfo
     {
-        Version = "v1.0.4",
+        Version = "v1.0.5",
         Title = "Car Service",
         Description = "Backend",
     });

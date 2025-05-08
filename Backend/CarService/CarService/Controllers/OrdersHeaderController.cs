@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using CarService.Models;
 using CarService.DTOs;
 using CarService.Helpers;
+using CarService.Attributes;
+using static CarService.Helpers.AuthHelper;
 
 namespace CarService.Controllers
 {
@@ -22,53 +24,71 @@ namespace CarService.Controllers
         /// <summary>
         /// Megrendelések lekérdezése
         /// </summary>
+        /// <param name="orderId"></param>
+        /// <param name="customerId"></param>
+        /// <param name="statusId"></param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>OrdersHeaderDTO List, 204, 400</returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<OrdersHeaderDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(GenericResponseDTO),StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> GetOrders([FromQuery] int? orderId, [FromQuery] Guid? customerId, [FromQuery] int? statusId, CancellationToken cToken)
         {
-            var query = _context.OrdersHeaders
-                .Include(o => o.Status)
-                .AsQueryable();
-
-            if (orderId.HasValue)
-                query = query.Where(o => o.Id == orderId);
-
-            if (customerId.HasValue)
-                query = query.Where(o => o.CustomerId == customerId.Value);
-
-            if (statusId.HasValue)
-                query = query.Where(o => o.StatusId == statusId.Value);
-
-            var result = await query.Select(o => new OrdersHeaderDTO
+            try
             {
-                id = o.Id,
-                customerId = o.CustomerId,
-                vehicleId = o.VehicleId,
-                orderNumber = o.OrderNumber,
-                offerId = o.OfferId,
-                agentId = o.AgentId,
-                mechanicId = o.MechanicId,
-                statusId = o.StatusId,
-                comment = o.Comment,
-                netAmount = o.NetAmount,
-                grossAmount = o.GrossAmount,
-                orderDate = o.OrderDate,
-                statusName = o.Status.Name
-            }).ToListAsync(cToken);
+                var query = _context.OrdersHeaders
+                    .Include(o => o.Status)
+                    .AsQueryable();
 
-            if (result.Count == 0)
-                return NoContent();
+                if (orderId.HasValue)
+                    query = query.Where(o => o.Id == orderId);
 
-            return Ok(result);
+                if (customerId.HasValue)
+                    query = query.Where(o => o.CustomerId == customerId.Value);
+
+                if (statusId.HasValue)
+                    query = query.Where(o => o.StatusId == statusId.Value);
+
+                var result = await query.Select(o => new OrdersHeaderDTO
+                {
+                    id = o.Id,
+                    customerId = o.CustomerId,
+                    vehicleId = o.VehicleId,
+                    orderNumber = o.OrderNumber,
+                    offerId = o.OfferId,
+                    agentId = o.AgentId,
+                    mechanicId = o.MechanicId,
+                    statusId = o.StatusId,
+                    comment = o.Comment,
+                    netAmount = o.NetAmount,
+                    grossAmount = o.GrossAmount,
+                    orderDate = o.OrderDate,
+                    statusName = o.Status.Name
+                }).ToListAsync(cToken);
+
+                if (result.Count == 0)
+                    return NoContent();
+
+                return Ok(result);
+
+            } catch (Exception ex)
+            {
+                return BadRequest(new GenericResponseDTO("OrdersHeader", "GET", ex.Message, null));
+            }
         }
 
         /// <summary>
         /// Megrendelés rögzítése
         /// </summary>
+        /// <param name="request">PostOrdersHeaderRequest</param>
+        /// <param name="cToken">Cancellationtoken</param>
+        /// <returns>200, 400</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> PostOrder([FromBody] PostOrdersHeaderRequest request, CancellationToken cToken)
         {
             if (!await _context.Users.AnyAsync(u => u.Id == request.customerId, cToken))
@@ -104,10 +124,14 @@ namespace CarService.Controllers
         /// <summary>
         /// Megrendelés módosítása
         /// </summary>
+        /// <param name="request">UpdateOrdersHeaderRequest</param>
+        /// <param name="cToken">Cancellationtoken</param>
+        /// <returns>200, 400, 404</returns>
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> PutOrder([FromBody] UpdateOrdersHeaderRequest request, CancellationToken cToken)
         {
             var order = await _context.OrdersHeaders.FirstOrDefaultAsync(o => o.Id == request.id, cToken);
@@ -151,10 +175,14 @@ namespace CarService.Controllers
         /// <summary>
         /// Megrendelés törlése
         /// </summary>
+        /// <param name="id">OrderHeader.id</param>
+        /// <param name="cToken">Cancellationtoken</param>
+        /// <returns>204, 400, 404</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AuthorizeRole(UserRole.Admin, UserRole.Owner)]
         public async Task<IActionResult> DeleteOrder(int id, CancellationToken cToken)
         {
             var order = await _context.OrdersHeaders.FirstOrDefaultAsync(o => o.Id == id, cToken);
