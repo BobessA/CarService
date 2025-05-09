@@ -65,7 +65,11 @@ function RouteComponent() {
     const edit = edits[offer.id];
     if (!edit) return;
     
-    const updatedOffer = { ...offer, ...edit, appointmentDate: edit.appointmentDate || null };
+    const updatedOffer = { ...offer,
+      ...edit,
+      appointmentDate: edit.appointmentDate || null,
+    agentId: offer.statusId === 1 ? user?.userId : offer.agentId };
+
   
     // Létrehozunk egy FormData objektumot
     const formData = new FormData();
