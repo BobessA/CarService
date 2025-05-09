@@ -2,6 +2,7 @@ import React, { useState, useEffect, FC } from "react";
 import { Vehicle } from "../../models/Vehicle";
 import { useAuth } from "../../contexts/AuthContext";
 import apiClient from "../../utils/apiClient"; // centralized API client module
+import { validateVehicle } from "../../validations/vehicleManagerValidation";
 
 interface FuelType {
   id: number;
@@ -32,6 +33,7 @@ const VehicleManager: FC = () => {
     fuelType: 0,
     ownerId: user?.userId || "",
   });
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Load vehicles & fuel types
   useEffect(() => {
@@ -55,12 +57,13 @@ const VehicleManager: FC = () => {
   // Reset form
   const resetForm = () => {
     setEditing(null);
+    setValidationErrors([]);
     setShowForm(false);
     setForm({
       licensePlate: "",
       brand: "",
       model: "",
-      yearOfManufacture: new Date().getFullYear(),
+      yearOfManufacture: 0,
       vin: "",
       engineCode: "",
       odometer: 0,
@@ -78,6 +81,13 @@ const VehicleManager: FC = () => {
   // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validationErrors = validateVehicle(form);
+    if (Object.keys(validationErrors).length > 0) {
+      setValidationErrors(validationErrors);
+      return;
+    }
+    console.log(JSON.stringify(validationErrors));
+
     const endpoint = `/vehicles`;
     const action = editing ? apiClient.put : apiClient.post; 
 
@@ -121,31 +131,39 @@ const VehicleManager: FC = () => {
         <div className="bg-white p-6 rounded-lg shadow mb-6 transition-opacity duration-300 ease-in-out">
           <h2 className="text-lg font-semibold mb-4">
             {editing ? "Jármű szerkesztése" : "Új jármű regisztrálása"}
+            {validationErrors && <p className="text-red-500 text-sm mt-1">{validationErrors[0]}</p>}
           </h2>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input type="text" placeholder="Rendszám" value={form.licensePlate}
               onChange={e => setForm({ ...form, licensePlate: e.target.value })}
+              readOnly={editing !== null}
               className="border px-3 py-2 rounded" required />
             <input type="text" placeholder="Márka" value={form.brand}
               onChange={e => setForm({ ...form, brand: e.target.value })}
+              readOnly={editing !== null}
               className="border px-3 py-2 rounded" required />
             <input type="text" placeholder="Típus" value={form.model}
               onChange={e => setForm({ ...form, model: e.target.value })}
+              readOnly={editing !== null}
               className="border px-3 py-2 rounded" required />
-            <input type="number" placeholder="Gyártási év" value={form.yearOfManufacture}
+            <input type="number" placeholder="Gyártási év" value={form.yearOfManufacture === 0 ? "" : form.yearOfManufacture}
               onChange={e => setForm({ ...form, yearOfManufacture: Number(e.target.value) })}
+              readOnly={editing !== null}
               className="border px-3 py-2 rounded" required />
             <input type="text" placeholder="Alvázszám" value={form.vin}
               onChange={e => setForm({ ...form, vin: e.target.value })}
+              readOnly={editing !== null}
               className="border px-3 py-2 rounded" required />
-            <input type="text" placeholder="Motor kód" value={form.engineCode}
+            <input type="text" placeholder="Motorkód" value={form.engineCode}
               onChange={e => setForm({ ...form, engineCode: e.target.value })}
+              readOnly={editing !== null}
               className="border px-3 py-2 rounded" required />
-            <input type="number" placeholder="Kilométeróra" value={form.odometer}
+            <input type="number" placeholder="Kilométeróra állás" value={form.odometer === 0 ? "" : form.odometer}
               onChange={e => setForm({ ...form, odometer: Number(e.target.value) })}
               className="border px-3 py-2 rounded" required />
             <select value={form.fuelType} onChange={e => setForm({ ...form, fuelType: Number(e.target.value) })}
-              className="border px-3 py-2 rounded" required>
+              className="border px-3 py-2 rounded" required
+              disabled={editing !== null}>
               <option value={0}>Üzemanyag típusa</option>
               {fuelTypes.map(ft => <option key={ft.id} value={ft.id}>{ft.name}</option>)}
             </select>
