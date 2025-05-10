@@ -155,15 +155,17 @@ const Navbar: React.FC = () => {
 
           <div className="hidden sm:flex sm:items-center">
             {user ? (
-              <div className="relative">
+              <div className="relative"
+                  onMouseEnter={() => setUserMenuOpen(() => true)}     >
                 <button
-                  onClick={() => setUserMenuOpen((open) => !open)}
                   className="flex items-center text-gray-900 px-3 py-2 text-sm rounded-md hover:bg-gray-100"
                 >
                   Üdv, {user.name}! <ChevronDown size={16} className="ml-1" />
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
+                  <div
+                  onMouseLeave={() => setUserMenuOpen(false)}
+                  className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
                     <Link
                       to="/auth/profile"
                       className="block px-4 py-2 hover:bg-gray-100"
