@@ -156,7 +156,7 @@ const Navbar: React.FC = () => {
           <div className="hidden sm:flex sm:items-center">
             {user ? (
               <div className="relative"
-                  onMouseEnter={() => setUserMenuOpen(() => true)}     >
+                  onMouseEnter={() => setUserMenuOpen(true)}     >
                 <button
                   className="flex items-center text-gray-900 px-3 py-2 text-sm rounded-md hover:bg-gray-100"
                 >
