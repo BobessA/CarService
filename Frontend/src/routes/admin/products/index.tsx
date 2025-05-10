@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { authGuard, eventAuthGuard } from '../../../utils/authGuard'
+import { authGuard } from '../../../utils/authGuard'
 import apiClient from "../../../utils/apiClient";
 import { ProductData } from "../../../models/ProductData";
 import { ProductCatAssignmentData } from "../../../models/ProductCatAssignmentData";

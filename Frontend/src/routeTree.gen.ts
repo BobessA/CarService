@@ -24,6 +24,7 @@ import { Route as AuthProfileImport } from './routes/auth/profile'
 import { Route as AuthLoginImport } from './routes/auth/login'
 import { Route as AdminUsersIndexImport } from './routes/admin/users/index'
 import { Route as AdminProductsIndexImport } from './routes/admin/products/index'
+import { Route as AdminProductOrdersIndexImport } from './routes/admin/productOrders/index'
 import { Route as AdminOrdersIndexImport } from './routes/admin/orders/index'
 import { Route as AdminOffersIndexImport } from './routes/admin/offers/index'
 import { Route as AdminCarsIndexImport } from './routes/admin/cars/index'
@@ -105,6 +106,12 @@ const AdminUsersIndexRoute = AdminUsersIndexImport.update({
 const AdminProductsIndexRoute = AdminProductsIndexImport.update({
   id: '/admin/products/',
   path: '/admin/products/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AdminProductOrdersIndexRoute = AdminProductOrdersIndexImport.update({
+  id: '/admin/productOrders/',
+  path: '/admin/productOrders/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -228,6 +235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersIndexImport
       parentRoute: typeof rootRoute
     }
+    '/admin/productOrders/': {
+      id: '/admin/productOrders/'
+      path: '/admin/productOrders'
+      fullPath: '/admin/productOrders'
+      preLoaderRoute: typeof AdminProductOrdersIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/admin/products/': {
       id: '/admin/products/'
       path: '/admin/products'
@@ -262,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/admin/cars': typeof AdminCarsIndexRoute
   '/admin/offers': typeof AdminOffersIndexRoute
   '/admin/orders': typeof AdminOrdersIndexRoute
+  '/admin/productOrders': typeof AdminProductOrdersIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
 }
@@ -281,6 +296,7 @@ export interface FileRoutesByTo {
   '/admin/cars': typeof AdminCarsIndexRoute
   '/admin/offers': typeof AdminOffersIndexRoute
   '/admin/orders': typeof AdminOrdersIndexRoute
+  '/admin/productOrders': typeof AdminProductOrdersIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
 }
@@ -301,6 +317,7 @@ export interface FileRoutesById {
   '/admin/cars/': typeof AdminCarsIndexRoute
   '/admin/offers/': typeof AdminOffersIndexRoute
   '/admin/orders/': typeof AdminOrdersIndexRoute
+  '/admin/productOrders/': typeof AdminProductOrdersIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
 }
@@ -322,6 +339,7 @@ export interface FileRouteTypes {
     | '/admin/cars'
     | '/admin/offers'
     | '/admin/orders'
+    | '/admin/productOrders'
     | '/admin/products'
     | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
@@ -340,6 +358,7 @@ export interface FileRouteTypes {
     | '/admin/cars'
     | '/admin/offers'
     | '/admin/orders'
+    | '/admin/productOrders'
     | '/admin/products'
     | '/admin/users'
   id:
@@ -358,6 +377,7 @@ export interface FileRouteTypes {
     | '/admin/cars/'
     | '/admin/offers/'
     | '/admin/orders/'
+    | '/admin/productOrders/'
     | '/admin/products/'
     | '/admin/users/'
   fileRoutesById: FileRoutesById
@@ -378,6 +398,7 @@ export interface RootRouteChildren {
   AdminCarsIndexRoute: typeof AdminCarsIndexRoute
   AdminOffersIndexRoute: typeof AdminOffersIndexRoute
   AdminOrdersIndexRoute: typeof AdminOrdersIndexRoute
+  AdminProductOrdersIndexRoute: typeof AdminProductOrdersIndexRoute
   AdminProductsIndexRoute: typeof AdminProductsIndexRoute
   AdminUsersIndexRoute: typeof AdminUsersIndexRoute
 }
@@ -397,6 +418,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCarsIndexRoute: AdminCarsIndexRoute,
   AdminOffersIndexRoute: AdminOffersIndexRoute,
   AdminOrdersIndexRoute: AdminOrdersIndexRoute,
+  AdminProductOrdersIndexRoute: AdminProductOrdersIndexRoute,
   AdminProductsIndexRoute: AdminProductsIndexRoute,
   AdminUsersIndexRoute: AdminUsersIndexRoute,
 }
@@ -425,6 +447,7 @@ export const routeTree = rootRoute
         "/admin/cars/",
         "/admin/offers/",
         "/admin/orders/",
+        "/admin/productOrders/",
         "/admin/products/",
         "/admin/users/"
       ]
@@ -470,6 +493,9 @@ export const routeTree = rootRoute
     },
     "/admin/orders/": {
       "filePath": "admin/orders/index.tsx"
+    },
+    "/admin/productOrders/": {
+      "filePath": "admin/productOrders/index.tsx"
     },
     "/admin/products/": {
       "filePath": "admin/products/index.tsx"
