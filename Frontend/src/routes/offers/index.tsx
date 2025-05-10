@@ -93,27 +93,42 @@ function RouteComponent() {
               ? 'border-red-500'
               : offer.statusName === 'Feldolgozás alatt'
               ? 'border-yellow-500'
+              : offer.statusName === 'Elutasított'
+              ? 'border-red-700'
               : offer.statusName === 'Elfogadásra vár'
               ? 'border-blue-500'
               : 'border-green-500';
 
               const handleAccept = async () => {
                 try {
-                  // Létrehozzuk a FormData objektumot
                   const formData = new FormData();
                   formData.append('id', offer.id.toString());
-                  formData.append('statusId', '3'); // Elfogadott állapot
+                  formData.append('statusId', '3'); 
                   
-                  // FormData-val küldjük a PUT kérést
                   await apiClient.put(`/Offers`, formData, user?.userId);
-                  
-                  // Frissítjük a lokális állapotot
-                  setOffers(prev => prev.map(o => 
+                                    setOffers(prev => prev.map(o => 
                     o.id === offer.id ? { ...o, statusName: 'Elfogadott', statusId: 3 } : o
                   ));
                 } catch (error) {
                   console.error('Elfogadási hiba:', error);
                   alert('Hiba az elfogadás során');
+                }
+              };
+
+              const handleDecline = async () => {
+                try {
+                  const formData = new FormData();
+                  formData.append('id', offer.id.toString());
+                  formData.append('statusId', '5'); // 
+                  
+                  await apiClient.put(`/Offers`, formData, user?.userId);
+                  
+                  setOffers(prev => prev.map(o => 
+                    o.id === offer.id ? { ...o, statusName: 'Elutasított', statusId: 5 } : o
+                  ));
+                } catch (error) {
+                  console.error('Elutasítási hiba:', error);
+                  alert('Hiba az elutasítás során');
                 }
               };
 
@@ -155,12 +170,20 @@ function RouteComponent() {
                     {offer.adminComment && <p className="mt-1"><span className="font-medium">Admin megjegyzés:</span> {offer.adminComment}</p>}
                     {offer.appointmentDate && <p className="mt-1"><span className="font-medium">Időpont:</span> {format(new Date(offer.appointmentDate), 'yyyy.MM.dd. HH:mm')}</p>}
                     {offer.statusName === 'Elfogadásra vár' && (
-                      <button
+                      <>
+                                            <button
                         onClick={handleAccept}
                         className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
                       >
                         Időpont elfogadása
                       </button>
+                      <button
+                        onClick={handleDecline}
+                        className="mt-4 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+                      >
+                        Időpont Elutasítása
+                      </button>
+                      </>
                     )}
                   </div>
                 </div>
