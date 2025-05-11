@@ -16,8 +16,29 @@ import { OrderItem } from '../../../models/OrderItem';
 import { Product } from '../../../models/Product';
 import { useAuth } from "../../../contexts/AuthContext";
 import apiClient from "../../../utils/apiClient";
+import AsyncSelect from 'react-select/async';
 
 type OrderItemsByOrderId = Record<number, Array<OrderItem & { product?: Product }>>;
+
+const createProductLoader = (userId: string) => async (inputValue: string) => {
+  if (!inputValue) return [];
+
+  try {
+    const response = await apiClient.get<Product[]>(
+      `/Products?name=${encodeURIComponent(inputValue)}`,
+      userId
+    );
+    return response.map(product => ({
+      value: product.productId,
+      label: `${product.name} (${product.brand}) - ${product.sellingPrice} Ft`,
+      sellingPrice: product.sellingPrice,
+    }));
+  } catch (error) {
+    console.error('Failed to load products:', error);
+    return [];
+  }
+};
+
 
 
 const OrderTable = ({ 
@@ -109,7 +130,7 @@ const OrderDetails = ({
   return (
     <tr className="bg-gray-50">
       <td colSpan={Object.keys(order).length} className="px-4 py-4">
-        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2">
+        <div className="grid sm:grid-cols-1 gap-x-8 gap-y-2 w-full">
           <p><strong>ID:</strong> {order.id}</p>
           <p><strong>Customer ID:</strong> {order.customerId}</p>
           <p><strong>Vehicle ID:</strong> {order.vehicleId}</p>
@@ -148,10 +169,10 @@ const OrderDetails = ({
 
           <div className="mt-4">
             <button
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
               onClick={() => onAddItemClick(order.id)}
             >
-              🇨🇭 Új tétel hozzáadása
+              Új tétel hozzáadása
             </button>
           </div>
         </div>
@@ -162,32 +183,32 @@ const OrderDetails = ({
 
 const OrderItemsTable = ({ orderItems }: { orderItems: Array<OrderItem & { product?: Product }> }) => {
   return (
-    <div className="mt-6">
+    <div className="mt-6 w-full overflow-x-auto">
       <p className="font-semibold mb-2">Tételek:</p>
       <table className="min-w-full text-sm text-left border">
         <thead className="bg-gray-200">
           <tr>
-            <th className="px-2 py-1 border">Termék ID</th>
-            <th className="px-2 py-1 border">Név</th>
-            <th className="px-2 py-1 border">Márka</th>
-            <th className="px-2 py-1 border">Mennyiség</th>
-            <th className="px-2 py-1 border">Egységár</th>
-            <th className="px-2 py-1 border">Nettó</th>
-            <th className="px-2 py-1 border">Bruttó</th>
-            <th className="px-2 py-1 border">Megjegyzés</th>
+            <th className="px-4 py-2 border">Termék ID</th>
+            <th className="px-4 py-2 border">Név</th>
+            <th className="px-4 py-2 border">Márka</th>
+            <th className="px-4 py-2 border">Mennyiség</th>
+            <th className="px-4 py-2 border">Egységár</th>
+            <th className="px-4 py-2 border">Nettó</th>
+            <th className="px-4 py-2 border">Bruttó</th>
+            <th className="px-4 py-2 border">Megjegyzés</th>
           </tr>
         </thead>
         <tbody>
           {orderItems.map((item, idx) => (
             <tr key={idx} className="even:bg-gray-100">
-              <td className="px-2 py-1 border">{item.productId}</td>
-              <td className="px-2 py-1 border">{item.product?.name || "-"}</td>
-              <td className="px-2 py-1 border">{item.product?.brand || "-"}</td>
-              <td className="px-2 py-1 border">{item.quantity}</td>
-              <td className="px-2 py-1 border">{item.unitPrice} Ft</td>
-              <td className="px-2 py-1 border">{item.netAmount} Ft</td>
-              <td className="px-2 py-1 border">{item.grossAmount} Ft</td>
-              <td className="px-2 py-1 border">{item.comment}</td>
+              <td className="px-4 py-2 border">{item.productId}</td>
+              <td className="px-4 py-2 border">{item.product?.name || "-"}</td>
+              <td className="px-4 py-2 border">{item.product?.brand || "-"}</td>
+              <td className="px-4 py-2 border">{item.quantity}</td>
+              <td className="px-4 py-2 border">{item.unitPrice} Ft</td>
+              <td className="px-4 py-2 border">{item.netAmount} Ft</td>
+              <td className="px-4 py-2 border">{item.grossAmount} Ft</td>
+              <td className="px-4 py-2 border">{item.comment}</td>
             </tr>
           ))}
         </tbody>
@@ -243,28 +264,26 @@ const AddItemModal = ({
             value={newOrderItem.orderId}
             readOnly
           />
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Termék
-          </label>
-          <select
-            className="w-full border px-3 py-2 rounded"
-            value={newOrderItem.productId}
-            onChange={e => {
-              const selectedProduct = products.find(p => p.productId === e.target.value);
-              onChange({
-                ...newOrderItem,
-                productId: e.target.value,
-                unitPrice: selectedProduct?.sellingPrice || 0
-              });
-            }}
-          >
-            <option value="">Válassz terméket</option>
-            {products.map(product => (
-              <option key={product.productId} value={product.productId}>
-                {product.name} ({product.brand}) - {product.sellingPrice} Ft
-              </option>
-            ))}
-          </select>
+
+
+
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Termék
+            </label>
+              <AsyncSelect
+                cacheOptions
+                loadOptions={createProductLoader(user.userId)}
+                defaultOptions
+                onChange={(selectedOption) => {
+                  if (selectedOption) {
+                    handleChange({
+                      productId: selectedOption.value,
+                      unitPrice: selectedOption.sellingPrice // Add this line
+                    });
+                  }
+                }}
+                placeholder="Keresés terméknévre..."
+              />
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Mennyiség
           </label>
@@ -278,15 +297,13 @@ const AddItemModal = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Egységár
           </label>
-          <input
-            type="number"
-            placeholder="Egységár"
-            className="w-full border px-3 py-2 rounded"
-            value={newOrderItem.unitPrice}
-            onChange={e => handleChange({ quantity: Number(e.target.value) })}
-          />
-
-
+            <input
+              type="number"
+              placeholder="Egységár"
+              className="w-full border px-3 py-2 rounded"
+              value={newOrderItem.unitPrice}
+              onChange={e => handleChange({ unitPrice: Number(e.target.value) })}
+            />
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Nettó összeg
           </label>
@@ -296,7 +313,6 @@ const AddItemModal = ({
             value={newOrderItem.netAmount || 0}
             readOnly
           />
-
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Bruttó összeg (27% ÁFA)
           </label>
@@ -306,19 +322,6 @@ const AddItemModal = ({
             value={newOrderItem.grossAmount || 0}
             readOnly
           />
-
-
-
-
-
-
-
-
-
-
-
-          
-          
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Megjegyzés
           </label>
