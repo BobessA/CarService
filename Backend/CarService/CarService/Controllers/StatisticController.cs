@@ -88,6 +88,8 @@ namespace CarService.Controllers
                 })
                 .ToList();
 
+            // --- 4. Havi ügyfélszám ---
+             
 
 
             // --- Összesített eredmény ---

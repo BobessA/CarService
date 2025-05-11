@@ -38,6 +38,7 @@ public partial class CarServiceContext : DbContext
     public virtual DbSet<Vehicle> Vehicles { get; set; }
 
     public virtual DbSet<OfferImage> OfferImages { get; set; }
+    public virtual DbSet<SupplierOrder> SupplierOrders { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

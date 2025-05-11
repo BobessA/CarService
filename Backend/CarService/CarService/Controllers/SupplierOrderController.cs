@@ -1,0 +1,115 @@
+﻿
+using CarService.DTOs;
+using CarService.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace CarService.Controllers
+{
+    [Route("api/SupplierOrders")]
+    [ApiController]
+    public class SupplierOrdersController : ControllerBase
+    {
+        private readonly CarServiceContext _context;
+        public SupplierOrdersController(CarServiceContext ctx) => _context = ctx;
+
+        [HttpGet]
+        public async Task<IActionResult> Get(
+            int? id,
+            string? agentId,
+            CancellationToken ct)
+        {
+            var q = _context.SupplierOrders.AsQueryable();
+
+            if (id.HasValue)
+                q = q.Where(x => x.Id == id.Value);
+
+            if (!string.IsNullOrEmpty(agentId))
+            {
+                if (Guid.TryParse(agentId, out var ag))
+                    q = q.Where(x => x.AgentId == ag);
+                else
+                    return BadRequest("Invalid agentId");
+            }
+
+            var list = await q
+              .Select(x => new SupplierOrderDTO
+              {
+                  Id = x.Id,
+                  ProductId = x.ProductId,
+                  AgentId = x.AgentId,
+                  Quantity = x.Quantity,
+                  OrderedDate = x.OrderedDate,
+                  StatusId = x.StatusId
+              })
+              .ToListAsync(ct);
+
+            if (list.Count == 0) return NoContent();
+            return Ok(list);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post(
+            [FromBody] PostSupplierOrderRequest req,
+            CancellationToken ct)
+        {
+            
+            if (!await _context.Products.AnyAsync(p => p.ProductId == req.ProductId, ct))
+                return BadRequest("Invalid productId");
+
+            var order = new SupplierOrder
+            {
+                ProductId = req.ProductId,
+                AgentId = null,             // ha nincs, hagyjuk null-on
+                Quantity = req.Quantity,
+                OrderedDate = DateTime.UtcNow,
+                StatusId = 1                 // default „Beküldött”
+            };
+
+            await _context.SupplierOrders.AddAsync(order, ct);
+            await _context.SaveChangesAsync(ct);
+            return Ok();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Put(
+            [FromBody] UpdateSupplierOrderRequest req,
+            CancellationToken ct)
+        {
+            var order = await _context.SupplierOrders.FindAsync(new object[] { req.Id }, ct);
+            if (order == null) return NotFound();
+
+            if (req.Quantity.HasValue)
+                order.Quantity = req.Quantity.Value;
+
+            if (req.StatusId.HasValue)
+            {
+                
+                order.StatusId = req.StatusId.Value;
+            }
+
+            if (req.OrderedDate.HasValue)
+                order.OrderedDate = req.OrderedDate.Value;
+
+            await _context.SaveChangesAsync(ct);
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(
+            int id,
+            CancellationToken ct)
+        {
+            var order = await _context.SupplierOrders.FindAsync(new object[] { id }, ct);
+            if (order == null) return NotFound();
+
+            _context.SupplierOrders.Remove(order);
+            await _context.SaveChangesAsync(ct);
+            return NoContent();
+        }
+    }
+}
