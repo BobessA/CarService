@@ -38,7 +38,12 @@ public partial class CarServiceContext : DbContext
     public virtual DbSet<Vehicle> Vehicles { get; set; }
 
     public virtual DbSet<OfferImage> OfferImages { get; set; }
+
     public virtual DbSet<SupplierOrder> SupplierOrders { get; set; }
+
+    public virtual DbSet<BrandModell> BrandModells { get; set; }
+
+    public virtual DbSet<VehicleBrand> VehicleBrands { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -179,6 +184,39 @@ public partial class CarServiceContext : DbContext
 
             entity.HasOne(d => d.Owner).WithMany(p => p.Vehicles).HasConstraintName("FK_Vehicle_Owner");
         });
+
+        modelBuilder.Entity<BrandModell>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Brand_mo__3213E83F45141354");
+
+            entity.ToTable("Brand_modells");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.BrandId).HasColumnName("brand_id");
+            entity.Property(e => e.ModellName)
+                .HasMaxLength(64)
+                .HasColumnName("modell_name");
+
+            entity.HasOne(d => d.Brand).WithMany(p => p.BrandModells)
+                .HasForeignKey(d => d.BrandId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BrandModells_Brand");
+        });
+
+        modelBuilder.Entity<VehicleBrand>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Vehicle___3213E83FDBE065DB");
+
+            entity.ToTable("Vehicle_brands");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Brand)
+                .HasMaxLength(64)
+                .HasColumnName("brand");
+        });
+
         modelBuilder.HasSequence("Offer_Sequence")
             .HasMin(0L)
             .HasMax(2147483647L);

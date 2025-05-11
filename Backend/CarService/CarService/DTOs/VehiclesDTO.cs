@@ -205,4 +205,42 @@ namespace CarService.DTOs
 
     }
 
+    /// <summary>
+    /// Gyártók
+    /// </summary>
+    [Serializable]
+    public class VehicleBrandsDTO
+    {
+        /// <summary>
+        /// Gyártó azonosító
+        /// </summary>
+        public int id { get; set; }
+
+        /// <summary>
+        /// Gyártó neve
+        /// </summary>
+        public string brandName { get; set; }
+    }
+
+    /// <summary>
+    /// Modellek
+    /// </summary>
+    [Serializable]
+    public class BrandModellsDTO
+    {
+        /// <summary>
+        /// Modell azonosító
+        /// </summary>
+        public int id { get; set; }
+
+        /// <summary>
+        /// Gyártó azonosító
+        /// </summary>
+        public int brandId { get; set; }
+
+        /// <summary>
+        /// Gyártó neve
+        /// </summary>
+        public string modellName { get; set; }
+    }
 }

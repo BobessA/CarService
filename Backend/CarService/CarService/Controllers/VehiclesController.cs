@@ -225,5 +225,73 @@ namespace CarService.Controllers
                 return BadRequest(new GenericResponseDTO("Vehicles/Count", "GET", ex.Message, null));
             }
         }
+
+        /// <summary>
+        /// Gyártók lekérése
+        /// </summary>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>VehicleBrandsDTO list, 400, 204</returns>
+        [HttpGet("Brands")]
+        [ProducesResponseType(typeof(List<VehicleBrandsDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
+        public async Task<IActionResult> GetBrands(CancellationToken cToken)
+        {
+            var brands = await _context.VehicleBrands
+                .Select(r => new VehicleBrandsDTO
+                {
+                    id = r.Id,
+                    brandName = r.Brand,
+                })
+                .ToListAsync(cToken);
+
+            if (brands == null || brands.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(brands);
+
+        }
+
+        /// <summary>
+        /// Modellek lekérése
+        /// </summary>
+        /// <param name="brandId">Gyártó azonosító</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>BrandModellsDTO list, 400, 204</returns>
+        [HttpGet("Modells")]
+        [ProducesResponseType(typeof(List<BrandModellsDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
+        public async Task<IActionResult> GetModells(int? brandId, CancellationToken cToken)
+        {
+            var query = _context.BrandModells.AsQueryable();
+
+            if (brandId.HasValue)
+            {
+                query = query.Where(m => m.BrandId == brandId);
+            }
+
+            var modells = await query
+                .Select(r => new BrandModellsDTO
+                {
+                    id = r.Id,
+                    brandId = r.BrandId,
+                    modellName = r.ModellName,
+                })
+                .ToListAsync(cToken);
+
+            if (modells == null || modells.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(modells);
+
+        }
+
     }
 }
