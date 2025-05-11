@@ -5,17 +5,17 @@ export type OrderPdfData = {
     vehicleId: number;
     orderNumber: string;
     offerId: number;
+    agentId: string;
+    mechanicId: string;
     comment: string;
     netAmount: number;
     grossAmount: number;
     orderDate: string;
     statusName: string;
-    relatedOffer: {
-      offerNumber: string;
-      comment: string;
-    };
+    offerNumber: string;
+    offerIssueDescription: string;
     items: {
-      orderId: number;
+      id: number;
       productId: string;
       quantity: number;
       unitPrice: number;
@@ -33,19 +33,5 @@ export type OrderPdfData = {
       engineCode: string;
       odometer: number;
       fuelType: number;
-    };
-    customer: {
-      name: string;
-      phoneNumber: string;
-      email: string;
-      discount: number;
-    };
-    administrator: {
-      name: string;
-      phoneNumber: string;
-      email: string;
-    };
-    mechanicer: {
-      name: string;
     };
   }
