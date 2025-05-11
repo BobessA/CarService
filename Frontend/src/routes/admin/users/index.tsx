@@ -29,44 +29,57 @@ function RouteComponent() {
   const [phoneFilter, setPhoneFilter] = useState<string>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
+  // Registration form state
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newRole, setNewRole] = useState("");
+  const [registering, setRegistering] = useState(false);
+
   // Fetch users
-  useEffect(() => {
-    
+  const loadUsers = () => {
     if (!user) return;
     apiClient
-    .get<User[]>(`/users`, user?.userId)
-    .then(setUsers)
-    .catch(err => console.error("Hiba a felhasználók lekérdezésében: ", err));
-}, [user, user?.userId]);
+      .get<User[]>(`/users`, user.userId)
+      .then(setUsers)
+      .catch((err) => console.error("Hiba a felhasználók lekérdezésében: ", err));
+  };
+  useEffect(() => {
+    loadUsers();
+  }, [user]);
 
-
-  // Update column filters when any filter changes
+  // Update column filters when any specific filter changes
   useEffect(() => {
     const filters: ColumnFiltersState = [];
     if (phoneFilter) filters.push({ id: "phone", value: phoneFilter });
-    if (roleFilter) filters.push({ id: "role", value: roleFilter });
+    if (roleFilter) filters.push({ id: "roleId", value: roleFilter });
     if (emailFilter) filters.push({ id: "email", value: emailFilter });
     setColumnFilters(filters);
-  }, [phoneFilter,roleFilter,emailFilter]);
+  }, [phoneFilter, roleFilter, emailFilter]);
 
   // Derive options with counts
   const roleOptions = useMemo(() => {
     const counts: Record<string, number> = {};
     users.forEach((u) => {
-      counts[u.roleId] = (counts[u.roleId] || 0) + 1;
+      const role = String(u.roleId);
+      counts[role] = (counts[role] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([value, count]) => ({ value, count }))
       .sort((a, b) => a.value.localeCompare(b.value));
-  }, users);
+  }, [users]);
 
+  // Table columns definition
   const columns = useMemo<ColumnDef<User>[]>(
     () => [
       { accessorKey: "name", header: "Név" },
       { accessorKey: "email", header: "E-mail cím" },
       { accessorKey: "phone", header: "Telefonszám" },
       { accessorKey: "roleId", header: "Jogosultság" },
-    ],[users]);
+    ],
+    []
+  );
 
   const table = useReactTable({
     data: users,
@@ -81,9 +94,106 @@ function RouteComponent() {
     initialState: { pagination: { pageIndex: 0, pageSize: 25 } },
   });
 
+  // Handle new user registration
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setRegistering(true);
+    try {
+      await apiClient.post(
+        "/users",
+        {
+          name: newName,
+          email: newEmail,
+          phone: newPhone,
+          roleId: newRole,
+          password: "CarService001",
+          discount: 0,
+          // password is omitted; backend must default to "CarService001"
+        },
+        user.userId
+      );
+      // reset form
+      setNewName("");
+      setNewEmail("");
+      setNewPhone("");
+      setNewRole("");
+      setShowRegisterForm(false);
+      loadUsers();
+    } catch (err) {
+      console.error("Hiba a felhasználó regisztrálásakor:", err);
+    } finally {
+      setRegistering(false);
+    }
+  };
+
   return (
     <div className="max-w-full mx-auto p-4 sm:p-6">
-      <h1 className="text-2xl font-bold mb-4">Járművek</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Felhasználók</h1>
+        <button
+          onClick={() => setShowRegisterForm((prev) => !prev)}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Új felhasználó
+        </button>
+      </div>
+
+      {showRegisterForm && (
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <form onSubmit={handleRegister} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input
+              type="text"
+              placeholder="Név"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              required
+              className="px-4 py-2 border rounded w-full"
+              disabled={registering}
+            />
+            <input
+              type="email"
+              placeholder="E-mail cím"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              required
+              className="px-4 py-2 border rounded w-full"
+              disabled={registering}
+            />
+            <input
+              type="text"
+              placeholder="Telefonszám"
+              value={newPhone}
+              onChange={(e) => setNewPhone(e.target.value)}
+              className="px-4 py-2 border rounded w-full"
+              disabled={registering}
+            />
+            <select
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
+              required
+              className="px-4 py-2 border rounded w-full"
+              disabled={registering}
+            >
+              <option value="">Jogosultság kiválasztása</option>
+              {roleOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.value}
+                </option>
+              ))}
+            </select>
+            <div className="sm:col-span-2 flex justify-end">
+              <button
+                type="submit"
+                disabled={registering}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50"
+              >
+                {registering ? "Regisztrálás..." : "Regisztrálás"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -94,7 +204,6 @@ function RouteComponent() {
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
-
         <input
           type="text"
           placeholder="Email keresés..."
@@ -102,7 +211,6 @@ function RouteComponent() {
           value={emailFilter}
           onChange={(e) => setEmailFilter(e.target.value)}
         />
-
         <input
           type="text"
           placeholder="Telefonszám keresés..."
@@ -110,7 +218,6 @@ function RouteComponent() {
           value={phoneFilter}
           onChange={(e) => setPhoneFilter(e.target.value)}
         />
-
         <select
           className="px-4 py-2 border rounded w-full"
           value={roleFilter}
@@ -135,11 +242,20 @@ function RouteComponent() {
                   <th
                     key={header.id}
                     className="px-4 py-3 font-medium cursor-pointer select-none"
-                    onClick={header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined}
+                    onClick={
+                      header.column.getCanSort()
+                        ? header.column.getToggleSortingHandler()
+                        : undefined
+                    }
                   >
                     <div className="flex items-center">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                      {{ asc: " 🔼", desc: " 🔽" }[header.column.getIsSorted() as string] ?? null}
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                      {{ asc: " 🔼", desc: " 🔽" }[
+                        header.column.getIsSorted() as string
+                      ] ?? null}
                     </div>
                   </th>
                 ))}
@@ -148,17 +264,29 @@ function RouteComponent() {
           </thead>
           <tbody className="text-gray-800">
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="even:bg-gray-50 hover:bg-gray-100 transition">
+              <tr
+                key={row.id}
+                className="even:bg-gray-50 hover:bg-gray-100 transition"
+              >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-2 whitespace-nowrap">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  <td
+                    key={cell.id}
+                    className="px-4 py-2 whitespace-nowrap"
+                  >
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
                   </td>
                 ))}
               </tr>
             ))}
             {table.getRowModel().rows.length === 0 && (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-6 text-center text-gray-500">
+                <td
+                  colSpan={columns.length}
+                  className="px-4 py-6 text-center text-gray-500"
+                >
                   Nincs találat.
                 </td>
               </tr>
@@ -194,7 +322,7 @@ function RouteComponent() {
 }
 
 export const Route = createFileRoute('/admin/users/')({
-  beforeLoad: () => authGuard([1,2,4]),
+  beforeLoad: () => authGuard([1, 2, 4]),
   component: RouteComponent,
 });
 
