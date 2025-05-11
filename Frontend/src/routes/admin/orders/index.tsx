@@ -47,7 +47,6 @@ const OrderTable = ({
   expandedOrderIds,
   orderItemsByOrderId,
   selectedOffer,
-  user,
   onRowClick,
   onAddItemClick
 }: {
@@ -161,7 +160,7 @@ const OrderDetails = ({
             </div>
           )}
           
-          {orderItems?.length > 0 && (
+          {orderItems && orderItems?.length > 0 && (
             <OrderItemsTable orderItems={orderItems} />
           )}
 
@@ -224,7 +223,6 @@ const AddItemModal = ({
   onClose, 
   onChange,
   onSave,
-  products,
 }: {
   isOpen: boolean;
   newOrderItem: OrderItem;

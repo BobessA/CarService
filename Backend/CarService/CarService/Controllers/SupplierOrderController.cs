@@ -16,14 +16,13 @@ namespace CarService.Controllers
     {
         private readonly CarServiceContext _context;
         public SupplierOrdersController(CarServiceContext ctx) => _context = ctx;
-
         [HttpGet]
         public async Task<IActionResult> Get(
             int? id,
             string? agentId,
             CancellationToken ct)
         {
-            var q = _context.SupplierOrders.AsQueryable();
+            IQueryable<SupplierOrder> q = _context.SupplierOrders;
 
             if (id.HasValue)
                 q = q.Where(x => x.Id == id.Value);
@@ -37,20 +36,25 @@ namespace CarService.Controllers
             }
 
             var list = await q
+              .Include(x => x.Agent) 
               .Select(x => new SupplierOrderDTO
               {
                   Id = x.Id,
                   ProductId = x.ProductId,
                   AgentId = x.AgentId,
+                  AgentName = x.Agent != null ? x.Agent.Name : null,
                   Quantity = x.Quantity,
                   OrderedDate = x.OrderedDate,
                   StatusId = x.StatusId
               })
               .ToListAsync(ct);
 
-            if (list.Count == 0) return NoContent();
+            if (list.Count == 0)
+                return NoContent();
+
             return Ok(list);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Post(
@@ -64,10 +68,10 @@ namespace CarService.Controllers
             var order = new SupplierOrder
             {
                 ProductId = req.ProductId,
-                AgentId = null,             // ha nincs, hagyjuk null-on
+                AgentId = req.AgentId,             
                 Quantity = req.Quantity,
                 OrderedDate = DateTime.UtcNow,
-                StatusId = 1                 // default „Beküldött”
+                StatusId = 6               // default „folyamatban”
             };
 
             await _context.SupplierOrders.AddAsync(order, ct);

@@ -10,19 +10,18 @@ import {
   flexRender,
   ColumnDef,
 } from '@tanstack/react-table';
+import { Status } from '../../../models/status';
+import { Product } from '../../../models/Product';
 
-// Temporary DTO until backend contract is finalized
+// DTO matching the backend contract
 interface SupplierOrderItem {
   id: number;
-  product_id: string;
-  agent_id: string | null;
-  quantity: number;
-  ordered_date: string;
-  status_id: number;
-}
-interface Product {
   productId: string;
-  name: string;
+  agentId: string | null;
+  agentName?: string | null;
+  quantity: number;
+  orderedDate: string;
+  statusId: number;
 }
 
 export const Route = createFileRoute('/admin/productOrders/')({
@@ -37,6 +36,7 @@ function ProductOrdersRouteComponent() {
   const [error, setError] = useState<string | null>(null);
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [statuses, setStatuses] = useState<Status[]>([]);
   const [productInput, setProductInput] = useState('');
   const [productId, setProductId] = useState('');
 
@@ -44,38 +44,53 @@ function ProductOrdersRouteComponent() {
   const [quantity, setQuantity] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
+  // Load products and statuses
   useEffect(() => {
     if (!user) return;
-    apiClient.get<Product[]>('/products', user.userId)
-      .then(setProducts)
-      .catch(() => {});
+    apiClient.get<Product[]>('/products', user.userId).then(setProducts).catch(() => {});
+    apiClient.get<Status[]>('/statuses', user.userId).then(setStatuses).catch(() => {});
   }, [user]);
 
-  // Fetch items
+  // Load orders
   const loadItems = () => {
     if (!user) return;
     setLoading(true);
-    apiClient.get<SupplierOrderItem[]>('/supplierorderitems', user.userId)
+    apiClient
+      .get<SupplierOrderItem[]>('/supplierorders', user.userId)
       .then(setItems)
       .catch(() => setError('Hiba az adatok betöltésekor'))
       .finally(() => setLoading(false));
   };
-  useEffect(() => loadItems(), [user]);
 
+  useEffect(() => {
+    loadItems();
+  }, [user]);
+
+  // Columns
   const columns = React.useMemo<ColumnDef<SupplierOrderItem>[]>(
     () => [
       { accessorKey: 'id', header: 'ID' },
-      { accessorKey: 'product_id', header: 'Termék ID' },
+      { accessorKey: 'agentName', header: 'Ügynök', cell: ({ getValue }) => getValue<string>() || '-' },
+      { accessorKey: 'productId', header: 'Termék ID' },
       { accessorKey: 'quantity', header: 'Mennyiség' },
       {
-        accessorKey: 'ordered_date',
+        accessorKey: 'orderedDate',
         header: 'Rendelés dátuma',
         cell: ({ getValue }) => new Date(getValue<string>()).toLocaleString(),
       },
-      { accessorKey: 'status_id', header: 'Státusz ID' },
+      {
+        accessorKey: 'statusId',
+        header: 'Státusz',
+        cell: ({ getValue }) => {
+          const id = getValue<number>();
+          const st = statuses.find(s => s.id === id);
+          return st ? st.name : id;
+        },
+      },
     ],
-    []
+    [statuses]
   );
+
   const table = useReactTable({
     data: items,
     columns,
@@ -84,13 +99,14 @@ function ProductOrdersRouteComponent() {
     initialState: { pagination: { pageIndex: 0, pageSize: 20 } },
   });
 
+  // Submit new order
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!productId || quantity < 1) return;
+    if (!productId || quantity < 1 || !user) return;
     setSubmitting(true);
     setError(null);
     try {
-      await apiClient.post('/supplierorders', { product_id: productId, quantity }, user?.userId);
+      await apiClient.post('/supplierorders', { productId, quantity, agentId: user.userId }, user.userId);
       setShowForm(false);
       setProductInput('');
       setProductId('');
@@ -105,8 +121,7 @@ function ProductOrdersRouteComponent() {
 
   return (
     <div className="max-w-full mx-auto p-4">
-                  {error && <p className="text-red-600 mb-2">{error}</p>}
-
+      {error && <p className="text-red-600 mb-2">{error}</p>}
       <h1 className="text-2xl font-bold mb-4">Szállítói rendelés tételek</h1>
       <button
         onClick={() => setShowForm(prev => !prev)}
@@ -184,7 +199,7 @@ function ProductOrdersRouteComponent() {
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
-                </tr>
+              </tr>
               ))}
               {items.length === 0 && (
                 <tr>
@@ -196,15 +211,19 @@ function ProductOrdersRouteComponent() {
             </tbody>
           </table>
           <div className="flex items-center justify-between p-4">
-            <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50">
-              Előző
-            </button>
+            <button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+            >Előző</button>
             <span>
               Oldal {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
             </span>
-            <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50">
-              Következő
-            </button>
+            <button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+            >Következő</button>
           </div>
         </div>
       )}

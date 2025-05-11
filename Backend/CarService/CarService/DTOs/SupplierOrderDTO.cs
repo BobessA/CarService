@@ -8,6 +8,7 @@ namespace CarService.DTOs
         public int Id { get; set; }
         public string ProductId { get; set; } = default!;
         public Guid? AgentId { get; set; }
+        public string? AgentName { get; set; }   
         public double Quantity { get; set; }
         public DateTime OrderedDate { get; set; }
         public int StatusId { get; set; }
@@ -20,6 +21,8 @@ namespace CarService.DTOs
 
         [Required, Range(0.0001, double.MaxValue)]
         public double Quantity { get; set; }
+
+        public Guid? AgentId { get; set; }
     }
 
     public class UpdateSupplierOrderRequest
