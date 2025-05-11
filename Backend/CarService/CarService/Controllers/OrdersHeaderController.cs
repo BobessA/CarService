@@ -219,5 +219,95 @@ namespace CarService.Controllers
 
             return Ok(count);
         }
+
+        /// <summary>
+        /// Megrendelések lekérdezése
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>OrdersHeaderDTO List, 204, 400</returns>
+        [HttpGet("fullOrder/{id}")]
+        [ProducesResponseType(typeof(FullOrderToPdfDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
+        public async Task<IActionResult> GetFullOrder(int id, CancellationToken cToken)
+        {
+            try
+            {
+                var header = await _context.OrdersHeaders
+                    .Where(o => o.Id == id)
+                    .FirstOrDefaultAsync(cToken);
+
+                if (header == null)
+                    return NoContent();
+
+                var items = await _context.OrderItems
+                    .Where(i => i.OrderId == id)
+                    .Select(i => new OrderItemDTO
+                    {
+                        id = i.Id,
+                        orderId = i.OrderId,
+                        productId = i.ProductId,
+                        quantity = i.Quantity,
+                        unitPrice = i.UnitPrice,
+                        netAmount = i.NetAmount,
+                        grossAmount = i.GrossAmount,
+                        comment = i.Comment
+                    })
+                    .ToListAsync(cToken);
+
+                var vehicle = await _context.Vehicles
+                    .Where(v => v.Id == (header.VehicleId))
+                    .Select(v => new VehiclesDTO
+                    {
+                        id = v.Id,
+                        ownerId = v.OwnerId,
+                        licensePlate = v.LicensePlate,
+                        brand = v.Brand,
+                        model = v.Model,
+                        yearOfManufacture = v.YearOfManufacture,
+                        vin = v.Vin,
+                        engineCode = v.EngineCode,
+                        odometer = v.Odometer,
+                        fuelType = v.FuelTypeId
+                    })
+                    .FirstOrDefaultAsync(cToken);
+
+                string statusName = await _context.Statuses.Where(s => s.Id == header.StatusId).Select(s => s.Name).FirstOrDefaultAsync(cToken);
+
+                var offer = await _context.Offers.Where(o => o.Id == header.OfferId).FirstOrDefaultAsync(cToken);
+
+                FullOrderToPdfDTO order = new FullOrderToPdfDTO
+                {
+                    id = id,
+                    customerId = header.CustomerId,
+                    vehicleId = header.VehicleId,
+                    vehicle = vehicle,
+                    orderNumber = header.OrderNumber,
+                    offerId = header.OfferId,
+                    agentId = header.AgentId,
+                    mechanicId = header.MechanicId,
+                    statusId = header.StatusId,
+                    statusName = statusName,
+                    comment = header.Comment,
+                    netAmount = header.NetAmount,
+                    grossAmount = header.GrossAmount,
+                    orderDate = header.OrderDate,
+                    offerNumber = offer.OfferNumber,
+                    offerIssueDescription = offer.IssueDescription,
+                    items = items,
+
+                };
+
+                return Ok(order);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new GenericResponseDTO("OrdersHeader/fullOrder", "GET", ex.Message, null));
+            }
+        }
+
     }
 }
