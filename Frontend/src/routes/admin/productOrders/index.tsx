@@ -12,17 +12,8 @@ import {
 } from '@tanstack/react-table';
 import { Status } from '../../../models/status';
 import { Product } from '../../../models/Product';
+import { SupplierOrderItem } from '../../../models/SupplierOrderItem';
 
-// DTO matching the backend contract
-interface SupplierOrderItem {
-  id: number;
-  productId: string;
-  agentId: string | null;
-  agentName?: string | null;
-  quantity: number;
-  orderedDate: string;
-  statusId: number;
-}
 
 export const Route = createFileRoute('/admin/productOrders/')({
   beforeLoad: () => authGuard([1, 2, 4]),
@@ -34,6 +25,7 @@ function ProductOrdersRouteComponent() {
   const [items, setItems] = useState<SupplierOrderItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submittingId, setSubmittingId] = useState<number | null>(null);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [statuses, setStatuses] = useState<Status[]>([]);
@@ -66,11 +58,27 @@ function ProductOrdersRouteComponent() {
     loadItems();
   }, [user]);
 
-  // Columns
+  const receiveHandler = async (id: number) => {
+    if (!user) return;
+    setSubmittingId(id);
+    try {
+      await apiClient.put('/supplierorders', { id, statusId: 1 }, user.userId);
+      loadItems();
+    } catch {
+      setError('Hiba a rendelés státusz frissítésekor');
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
   const columns = React.useMemo<ColumnDef<SupplierOrderItem>[]>(
     () => [
       { accessorKey: 'id', header: 'ID' },
-      { accessorKey: 'agentName', header: 'Ügynök', cell: ({ getValue }) => getValue<string>() || '-' },
+      {
+        accessorKey: 'agentName',
+        header: 'Ügynök',
+        cell: ({ getValue }) => getValue<string>() || '-',
+      },
       { accessorKey: 'productId', header: 'Termék ID' },
       { accessorKey: 'quantity', header: 'Mennyiség' },
       {
@@ -87,8 +95,26 @@ function ProductOrdersRouteComponent() {
           return st ? st.name : id;
         },
       },
+      {
+        id: 'actions',
+        header: 'Művelet',
+        cell: ({ row }) => {
+          const order = row.original;
+          if (order.statusId !== 6) return null;
+          const disabled = submittingId === order.id;
+          return (
+            <button
+              onClick={() => receiveHandler(order.id)}
+              disabled={disabled}
+              className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 disabled:opacity-50"
+            >
+              {disabled ? 'Feldolgozás...' : 'Átvesz'}
+            </button>
+          );
+        },
+      },
     ],
-    [statuses]
+    [statuses, submittingId]
   );
 
   const table = useReactTable({
@@ -106,7 +132,7 @@ function ProductOrdersRouteComponent() {
     setSubmitting(true);
     setError(null);
     try {
-      await apiClient.post('/supplierorders', { productId, quantity, agentId: user.userId }, user.userId);
+      await apiClient.post('/supplierorders', { productId, quantity }, user.userId);
       setShowForm(false);
       setProductInput('');
       setProductId('');
@@ -199,7 +225,7 @@ function ProductOrdersRouteComponent() {
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
-              </tr>
+                </tr>
               ))}
               {items.length === 0 && (
                 <tr>
@@ -216,9 +242,7 @@ function ProductOrdersRouteComponent() {
               disabled={!table.getCanPreviousPage()}
               className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
             >Előző</button>
-            <span>
-              Oldal {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
-            </span>
+            <span>Oldal {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}</span>
             <button
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}

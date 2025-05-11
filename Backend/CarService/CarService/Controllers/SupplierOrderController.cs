@@ -81,24 +81,42 @@ namespace CarService.Controllers
 
         [HttpPut]
         public async Task<IActionResult> Put(
-            [FromBody] UpdateSupplierOrderRequest req,
-            CancellationToken ct)
+     [FromBody] UpdateSupplierOrderRequest req,
+     CancellationToken ct)
         {
             var order = await _context.SupplierOrders.FindAsync(new object[] { req.Id }, ct);
-            if (order == null) return NotFound();
+            if (order == null)
+                return NotFound();
+
+            var originalStatus = order.StatusId;
 
             if (req.Quantity.HasValue)
                 order.Quantity = req.Quantity.Value;
 
             if (req.StatusId.HasValue)
-            {
-                
                 order.StatusId = req.StatusId.Value;
-            }
 
             if (req.OrderedDate.HasValue)
                 order.OrderedDate = req.OrderedDate.Value;
 
+
+            if (req.StatusId.HasValue
+                && req.StatusId.Value == 1
+                && originalStatus != 1)
+            {
+                var product = await _context.Products
+                    .FirstOrDefaultAsync(p => p.ProductId == order.ProductId, ct);
+
+                if (product != null)
+                {
+                    product.StockQuantity += order.Quantity;
+                }
+                else
+                {
+                    return BadRequest($"Product not found: {order.ProductId}");
+                }
+            }
+          
             await _context.SaveChangesAsync(ct);
             return Ok();
         }
