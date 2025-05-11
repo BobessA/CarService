@@ -14,6 +14,8 @@ import {
 import { Vehicle } from "../../../models/Vehicle";
 import { useAuth } from "../../../contexts/AuthContext";
 import apiClient from "../../../utils/apiClient";
+import { VehicleBrands } from "../../../models/VehicleBrands";
+import { VehicleModells } from "../../../models/VehicleModells";
 
 interface FuelType {
   id: number;
@@ -27,6 +29,8 @@ function RouteComponent() {
   // Data
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
+  const [brands, setBrands] = useState<VehicleBrands[]>([]);
+  const [modells, setModells] = useState<VehicleModells[]>([]);
 
   // Filters
   const [globalFilter, setGlobalFilter] = useState<string>("");
@@ -54,6 +58,19 @@ function RouteComponent() {
     .catch(err => console.error("Hiba a üzemanyagtípusok lekérésekor:", err));
 }, [user, user?.userId]);
 
+  // gyártók, modellek
+  useEffect(() => {
+    Promise.all([
+      apiClient.get<VehicleBrands[]>("/Vehicles/Brands", user?.userId),
+      apiClient.get<VehicleModells[]>("/Vehicles/Modells",user?.userId),
+    ])
+    .then(([brandsData, modellsData]) => {
+        setBrands(brandsData);
+        setModells(modellsData);
+    })
+    .catch(err => console.error("Hiba a gyártók és modellek lekérésekor:", err));
+  }, [user, user?.userId]);
+
   // Update column filters when any filter changes
   useEffect(() => {
     const filters: ColumnFiltersState = [];
@@ -65,27 +82,27 @@ function RouteComponent() {
   }, [fuelFilter, brandFilter, modelFilter, yearFilter]);
 
   // Derive options with counts
-  const brandOptions = useMemo(() => {
-    const counts: Record<string, number> = {};
-    vehicles.forEach((v) => {
-      counts[v.brand] = (counts[v.brand] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => a.value.localeCompare(b.value));
-  }, [vehicles]);
+  // const brandOptions = useMemo(() => {
+  //   const counts: Record<string, number> = {};
+  //   vehicles.forEach((v) => {
+  //     counts[v.brand] = (counts[v.brand] || 0) + 1;
+  //   });
+  //   return Object.entries(counts)
+  //     .map(([value, count]) => ({ value, count }))
+  //     .sort((a, b) => a.value.localeCompare(b.value));
+  // }, [vehicles]);
 
-  const modelOptions = useMemo(() => {
-    const counts: Record<string, number> = {};
-    vehicles
-      .filter((v) => !brandFilter || v.brand === brandFilter)
-      .forEach((v) => {
-        counts[v.model] = (counts[v.model] || 0) + 1;
-      });
-    return Object.entries(counts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => a.value.localeCompare(b.value));
-  }, [vehicles, brandFilter]);
+  // const modelOptions = useMemo(() => {
+  //   const counts: Record<string, number> = {};
+  //   vehicles
+  //     .filter((v) => !brandFilter || v.brand === brandFilter)
+  //     .forEach((v) => {
+  //       counts[v.model] = (counts[v.model] || 0) + 1;
+  //     });
+  //   return Object.entries(counts)
+  //     .map(([value, count]) => ({ value, count }))
+  //     .sort((a, b) => a.value.localeCompare(b.value));
+  // }, [vehicles, brandFilter]);
 
   const yearOptions = useMemo(() => {
     const counts: Record<number, number> = {};
@@ -158,12 +175,15 @@ function RouteComponent() {
         <select
           className="px-4 py-2 border rounded w-full"
           value={brandFilter}
-          onChange={(e) => setBrandFilter(e.target.value)}
+          onChange={(e) => {
+            setBrandFilter(e.target.value);
+            setModelFilter("");
+          }}
         >
           <option value="">Összes márka</option>
-          {brandOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {`${opt.value} (${opt.count})`}
+          {brands.map((brand) => (
+            <option key={brand.id} value={brand.brandName}>
+              {brand.brandName}
             </option>
           ))}
         </select>
@@ -174,9 +194,9 @@ function RouteComponent() {
           disabled={!brandFilter}
         >
           <option value="">Összes típus</option>
-          {modelOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {`${opt.value} (${opt.count})`}
+          {modells.filter(m => !brandFilter || m.brandId === brands.find(b => b.brandName === brandFilter)?.id).map(modell => (
+            <option key={modell.id} value={modell.modellName}>
+              {modell.modellName}
             </option>
           ))}
         </select>
