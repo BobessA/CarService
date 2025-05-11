@@ -9,16 +9,21 @@ interface FuelType {
   name: string;
 }
 
-const VehicleManager: FC = () => {
+interface VehicleManagerProps {
+  ownerId?: string;
+}
+
+const VehicleManager: FC<VehicleManagerProps> = ({ ownerId }) => {
   const { user } = useAuth();
   const token = user?.userId;
+  // Derive ownerId directly from props or fallback to current user
+  const effectiveOwner = ownerId ?? user?.userId ?? "";
 
   // Data states
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
-  // Loading & error states for vehicles
-  const [loadingVehicles, setLoadingVehicles] = useState(false);
-  const [vehiclesError, setVehiclesError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [editing, setEditing] = useState<Vehicle | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -31,189 +36,169 @@ const VehicleManager: FC = () => {
     engineCode: "",
     odometer: 0,
     fuelType: 0,
-    ownerId: user?.userId || "",
+    ownerId: effectiveOwner,
   });
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  // Load vehicles & fuel types
+  // Reset form whenever effectiveOwner changes
   useEffect(() => {
-    if (!user) return;
-    
-    // Fuel types (no indicator)
-    apiClient.get<FuelType[]>(`/fueltypes`, token)
-      .then(setFuelTypes)
-      .catch(console.error);
-    // Vehicles
-    setLoadingVehicles(true);
-    setVehiclesError(null);
-    apiClient.get<Vehicle[]>(`/vehicles?userId=${user.userId}`, token)
-      .then(setVehicles)
-      .catch(err => setVehiclesError(err.message))
-      .finally(() => setLoadingVehicles(false));
-
-
-  }, [user, token]);
-
-  // Reset form
-  const resetForm = () => {
-    setEditing(null);
-    setValidationErrors([]);
-    setShowForm(false);
     setForm({
       licensePlate: "",
       brand: "",
       model: "",
-      yearOfManufacture: 0,
+      yearOfManufacture: new Date().getFullYear(),
       vin: "",
       engineCode: "",
       odometer: 0,
       fuelType: 0,
-      ownerId: user?.userId || "",
+      ownerId: effectiveOwner,
     });
-  };
+    setEditing(null);
+    setShowForm(false);
+    setValidationErrors([]);
+  }, [effectiveOwner]);
 
-  // Open new
-  const openNewForm = () => {
-    resetForm();
+  // Fetch fuel types and vehicles whenever effectiveOwner changes or token changes
+  useEffect(() => {
+    if (!effectiveOwner || !token) return;
+    setLoading(true);
+    setError(null);
+
+    apiClient.get<FuelType[]>('/fueltypes', token)
+      .then(setFuelTypes)
+      .catch(() => {});
+
+    apiClient.get<Vehicle[]>(`/vehicles?userId=${effectiveOwner}`, token)
+      .then(setVehicles)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [effectiveOwner, token]);
+
+  // Open form for new or existing vehicle
+  const openForm = (vehicle?: Vehicle) => {
+    if (vehicle) {
+      setEditing(vehicle);
+      setForm({ ...vehicle, ownerId: effectiveOwner });
+    } else {
+      setEditing(null);
+      setForm(prev => ({ ...prev, ownerId: effectiveOwner }));
+    }
     setShowForm(true);
+    setValidationErrors([]);
   };
 
-  // Submit
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Reset form/cancel
+  const resetForm = () => {
+    setEditing(null);
+    setForm(prev => ({ ...prev, ownerId: effectiveOwner }));
+    setShowForm(false);
+    setValidationErrors([]);
+  };
+
+  // Submit handler
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validationErrors = validateVehicle(form);
-    if (Object.keys(validationErrors).length > 0) {
-      setValidationErrors(validationErrors);
+    const errs = validateVehicle(form);
+    if (Object.keys(errs).length > 0) {
+      setValidationErrors(Object.values(errs));
       return;
     }
-    console.log(JSON.stringify(validationErrors));
-
-    const endpoint = `/vehicles`;
-    const action = editing ? apiClient.put : apiClient.post; 
-
-       action<Vehicle>(endpoint, form, token)
-      .then(() => apiClient.get<Vehicle[]>(`/vehicles?userId=${user?.userId}`, token))
+    const action = editing ? apiClient.put : apiClient.post;
+    action<Vehicle>('/vehicles', form, token)
+      .then(() => apiClient.get<Vehicle[]>(`/vehicles?userId=${effectiveOwner}`, token))
       .then(setVehicles)
       .then(resetForm)
-      .catch(console.error);
+      .catch(err => setError(err.message));
   };
 
-  // Edit
-  const handleEdit = (v: Vehicle) => {
-    setEditing(v);
-    setForm({ ...v, ownerId: v.ownerId });
-    setShowForm(true);
-  };
-
-  // Delete
+  // Delete handler
   const handleDelete = (id: number) => {
-    if (!window.confirm("Biztos törlöd?")) return;
+    if (!window.confirm('Biztosan törlöd?')) return;
     apiClient.delete(`/vehicles/${id}`, token)
-      .then(() => apiClient.get<Vehicle[]>(`/vehicles?userId=${user?.userId}`, token))
+      .then(() => apiClient.get<Vehicle[]>(`/vehicles?userId=${effectiveOwner}`, token))
       .then(setVehicles)
-      .catch(console.error);
+      .catch(err => setError(err.message));
   };
 
-  // Get fuel name
-  const getFuelName = (id: number) =>
-    fuelTypes.find(ft => ft.id === id)?.name || "";
+  // Lookup fuel type name
+  const getFuelName = (id: number) => fuelTypes.find(ft => ft.id === id)?.name || "";
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Saját járművek</h2>
-        <button onClick={openNewForm} className="bg-green-600 text-white px-4 py-2 rounded">
-          Új jármű regisztrálása
-        </button>
+        <h2 className="text-xl font-bold">
+          {showForm ? (editing ? 'Jármű szerkesztése' : 'Új jármű regisztrálása') : 'Járművek'}
+        </h2>
+        {!showForm && (
+          <button onClick={() => openForm()} className="bg-green-600 text-white px-4 py-2 rounded">
+            Új jármű
+          </button>
+        )}
       </div>
 
+      {error && <p className="text-red-600 mb-2">{error}</p>}
+      {loading && <p>Betöltés...</p>}
+
       {showForm && (
-        <div className="bg-white p-6 rounded-lg shadow mb-6 transition-opacity duration-300 ease-in-out">
-          <h2 className="text-lg font-semibold mb-4">
-            {editing ? "Jármű szerkesztése" : "Új jármű regisztrálása"}
-            {validationErrors && <p className="text-red-500 text-sm mt-1">{validationErrors[0]}</p>}
-          </h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <input type="text" placeholder="Rendszám" value={form.licensePlate}
-              onChange={e => setForm({ ...form, licensePlate: e.target.value })}
-              readOnly={editing !== null}
-              className="border px-3 py-2 rounded" required />
-            <input type="text" placeholder="Márka" value={form.brand}
-              onChange={e => setForm({ ...form, brand: e.target.value })}
-              readOnly={editing !== null}
-              className="border px-3 py-2 rounded" required />
-            <input type="text" placeholder="Típus" value={form.model}
-              onChange={e => setForm({ ...form, model: e.target.value })}
-              readOnly={editing !== null}
-              className="border px-3 py-2 rounded" required />
-            <input type="number" placeholder="Gyártási év" value={form.yearOfManufacture === 0 ? "" : form.yearOfManufacture}
-              onChange={e => setForm({ ...form, yearOfManufacture: Number(e.target.value) })}
-              readOnly={editing !== null}
-              className="border px-3 py-2 rounded" required />
-            <input type="text" placeholder="Alvázszám" value={form.vin}
-              onChange={e => setForm({ ...form, vin: e.target.value })}
-              readOnly={editing !== null}
-              className="border px-3 py-2 rounded" required />
-            <input type="text" placeholder="Motorkód" value={form.engineCode}
-              onChange={e => setForm({ ...form, engineCode: e.target.value })}
-              readOnly={editing !== null}
-              className="border px-3 py-2 rounded" required />
-            <input type="number" placeholder="Kilométeróra állás" value={form.odometer === 0 ? "" : form.odometer}
-              onChange={e => setForm({ ...form, odometer: Number(e.target.value) })}
-              className="border px-3 py-2 rounded" required />
-            <select value={form.fuelType} onChange={e => setForm({ ...form, fuelType: Number(e.target.value) })}
-              className="border px-3 py-2 rounded" required
-              disabled={editing !== null}>
-              <option value={0}>Üzemanyag típusa</option>
-              {fuelTypes.map(ft => <option key={ft.id} value={ft.id}>{ft.name}</option>)}
-            </select>
-            <div className="sm:col-span-2 flex space-x-2 mt-4">
-              <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Mentés</button>
-              <button type="button" onClick={resetForm} className="bg-gray-400 text-white px-4 py-2 rounded">Mégse</button>
-            </div>
-          </form>
-        </div>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-6 rounded-lg shadow mb-6">
+          <input type="text" placeholder="Rendszám" value={form.licensePlate}
+            onChange={e => setForm({ ...form, licensePlate: e.target.value })}
+            readOnly={!!editing} required className="border p-2 rounded" />
+          <input type="text" placeholder="Márka" value={form.brand}
+            onChange={e => setForm({ ...form, brand: e.target.value })} required className="border p-2 rounded" />
+          <input type="text" placeholder="Típus" value={form.model}
+            onChange={e => setForm({ ...form, model: e.target.value })} required className="border p-2 rounded" />
+          <input type="number" placeholder="Gyártási év" value={form.yearOfManufacture}
+            onChange={e => setForm({ ...form, yearOfManufacture: Number(e.target.value) })}
+            min={1900} max={new Date().getFullYear()+1} required className="border p-2 rounded" />
+          <input type="text" placeholder="Alvázszám" value={form.vin}
+            onChange={e => setForm({ ...form, vin: e.target.value })} required className="border p-2 rounded" />
+          <input type="text" placeholder="Motorkód" value={form.engineCode}
+            onChange={e => setForm({ ...form, engineCode: e.target.value })} required className="border p-2 rounded" />
+          <input type="number" placeholder="Odométer" value={form.odometer}
+            onChange={e => setForm({ ...form, odometer: Number(e.target.value) })}
+            min={0} required className="border p-2 rounded" />
+          <select value={form.fuelType} onChange={e => setForm({ ...form, fuelType: Number(e.target.value) })} required className="border p-2 rounded">
+            <option value={0}>Üzemanyag típusa</option>
+            {fuelTypes.map(ft => <option key={ft.id} value={ft.id}>{ft.name}</option>)}
+          </select>
+          <div className="sm:col-span-2 flex justify-end space-x-2">
+            <button type="button" onClick={resetForm} className="bg-gray-400 text-white px-4 py-2 rounded">Mégse</button>
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Mentés</button>
+          </div>
+          {validationErrors.length>0 && <div className="sm:col-span-2 text-red-500">{validationErrors.map((err,i)=> <p key={i}>{err}</p>)}</div>}
+        </form>
       )}
 
-      {/* Loading & error states */}
-      {vehiclesError && <div className="text-red-600 mb-4">Hiba betöltéskor: {vehiclesError}</div>}
-      {loadingVehicles ? (
-        <div>Járművek betöltése...</div>
-      ) : (
-        
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
-          <table className="min-w-full divide-y divide-gray-200 text-sm text-left">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="px-4 py-2">Rendszám</th>
-                <th className="px-4 py-2">Márka</th>
-                <th className="px-4 py-2">Típus</th>
-                <th className="px-4 py-2">Év</th>
-                <th className="px-4 py-2">Üzemanyag</th>
-                <th className="px-4 py-2">Műveletek</th>
+      {!showForm && (
+        <table className="min-w-full divide-y divide-gray-200 text-sm text-left bg-white rounded-lg shadow">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-4 py-2">Rendszám</th>
+              <th className="px-4 py-2">Márka</th>
+              <th className="px-4 py-2">Típus</th>
+              <th className="px-4 py-2">Év</th>
+              <th className="px-4 py-2">Üzemanyag</th>
+              <th className="px-4 py-2">Műveletek</th>
+            </tr>
+          </thead>
+          <tbody>
+            {vehicles.map(v => (
+              <tr key={v.id} className="even:bg-gray-50 hover:bg-gray-100">
+                <td className="px-4 py-2">{v.licensePlate}</td>
+                <td className="px-4 py-2">{v.brand}</td>
+                <td className="px-4 py-2">{v.model}</td>
+                <td className="px-4 py-2">{v.yearOfManufacture}</td>
+                <td className="px-4 py-2">{getFuelName(v.fuelType)}</td>
+                <td className="px-4 py-2 space-x-2">
+                  <button onClick={() => openForm(v)} className="text-indigo-600 hover:underline">Szerkeszt</button>
+                  <button onClick={() => handleDelete(v.id)} className="text-red-600 hover:underline">Töröl</button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              
-              {vehicles.map(v => (
-                <tr key={v.id} className="even:bg-gray-50 hover:bg-gray-100">
-                  <td className="px-4 py-2">{v.licensePlate}</td>
-                  <td className="px-4 py-2">{v.brand}</td>
-                  <td className="px-4 py-2">{v.model}</td>
-                  <td className="px-4 py-2">{v.yearOfManufacture}</td>
-                  <td className="px-4 py-2">{getFuelName(v.fuelType)}</td>
-                  <td className="px-4 py-2 space-x-2">
-                    <button onClick={() => handleEdit(v)} className="text-indigo-600 hover:underline">Szerkeszt</button>
-                    <button onClick={() => handleDelete(v.id)} className="text-red-600 hover:underline">Töröl</button>
-                  </td>
-                </tr>
-              ))}
-              {vehicles.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-500">Nincs jármű.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {vehicles.length===0 && <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-500">Nincs jármű.</td></tr>}
+          </tbody>
+        </table>
       )}
     </div>
   );

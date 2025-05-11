@@ -14,8 +14,8 @@ import {
 import User from "../../../models/User";
 import { useAuth } from "../../../contexts/AuthContext";
 import apiClient from "../../../utils/apiClient";
+import VehicleManager from "../../../components/user/vehiclemanager";
 
-// RouteComponent is declared as a hoisted function so it can be referenced by the Route export.
 function RouteComponent() {
   const { user } = useAuth();
 
@@ -29,13 +29,17 @@ function RouteComponent() {
   const [phoneFilter, setPhoneFilter] = useState<string>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  // Registration form state
+  // Vehicle form state
+  const [vehicleOwner, setVehicleOwner] = useState<User | null>(null);
+
+  // User registration state
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
-  const [newRole, setNewRole] = useState("");
+  const [newRole, setNewRole] = useState<string>("");
   const [registering, setRegistering] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
 
   // Fetch users
   const loadUsers = () => {
@@ -43,13 +47,15 @@ function RouteComponent() {
     apiClient
       .get<User[]>(`/users`, user.userId)
       .then(setUsers)
-      .catch((err) => console.error("Hiba a felhasználók lekérdezésében: ", err));
+      .catch((err) =>
+        console.error("Hiba a felhasználók lekérdezésében: ", err)
+      );
   };
   useEffect(() => {
     loadUsers();
   }, [user]);
 
-  // Update column filters when any specific filter changes
+  // Update filters
   useEffect(() => {
     const filters: ColumnFiltersState = [];
     if (phoneFilter) filters.push({ id: "phone", value: phoneFilter });
@@ -58,25 +64,37 @@ function RouteComponent() {
     setColumnFilters(filters);
   }, [phoneFilter, roleFilter, emailFilter]);
 
-  // Derive options with counts
+  // Role options count
   const roleOptions = useMemo(() => {
     const counts: Record<string, number> = {};
     users.forEach((u) => {
-      const role = String(u.roleId);
-      counts[role] = (counts[role] || 0) + 1;
+      counts[String(u.roleId)] = (counts[String(u.roleId)] || 0) + 1;
     });
-    return Object.entries(counts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => a.value.localeCompare(b.value));
+    return Object.entries(counts).map(([value, count]) => ({
+      value,
+      count,
+    }));
   }, [users]);
 
-  // Table columns definition
+  // Table columns
   const columns = useMemo<ColumnDef<User>[]>(
     () => [
       { accessorKey: "name", header: "Név" },
       { accessorKey: "email", header: "E-mail cím" },
       { accessorKey: "phone", header: "Telefonszám" },
       { accessorKey: "roleId", header: "Jogosultság" },
+      {
+        id: "vehicles",
+        header: "Jármű regisztrálása",
+        cell: ({ row }) => (
+          <button
+            className="text-blue-600 hover:underline"
+            onClick={() => setVehicleOwner(row.original)}
+          >
+            Új jármű
+          </button>
+        ),
+      },
     ],
     []
   );
@@ -94,11 +112,12 @@ function RouteComponent() {
     initialState: { pagination: { pageIndex: 0, pageSize: 25 } },
   });
 
-  // Handle new user registration
+  // Handle user registration
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setRegistering(true);
+    setRegisterError(null);
     try {
       await apiClient.post(
         "/users",
@@ -108,20 +127,18 @@ function RouteComponent() {
           phone: newPhone,
           roleId: newRole,
           password: "CarService001",
-          discount: 0,
-          // password is omitted; backend must default to "CarService001"
+          discount: 0
         },
         user.userId
       );
-      // reset form
+      setShowRegisterForm(false);
       setNewName("");
       setNewEmail("");
       setNewPhone("");
       setNewRole("");
-      setShowRegisterForm(false);
       loadUsers();
-    } catch (err) {
-      console.error("Hiba a felhasználó regisztrálásakor:", err);
+    } catch (err: any) {
+      setRegisterError(err.message || "Hiba a regisztrálás során");
     } finally {
       setRegistering(false);
     }
@@ -132,21 +149,23 @@ function RouteComponent() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Felhasználók</h1>
         <button
-          onClick={() => setShowRegisterForm((prev) => !prev)}
+          onClick={() => setShowRegisterForm(prev => !prev)}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Új felhasználó
+          {showRegisterForm ? 'Űrlap elrejtése' : 'Új felhasználó'}
         </button>
       </div>
 
+      {/* Registration Form */}
       {showRegisterForm && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
+          {registerError && <p className="text-red-600 mb-2">{registerError}</p>}
           <form onSubmit={handleRegister} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
               type="text"
               placeholder="Név"
               value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              onChange={e => setNewName(e.target.value)}
               required
               className="px-4 py-2 border rounded w-full"
               disabled={registering}
@@ -155,7 +174,7 @@ function RouteComponent() {
               type="email"
               placeholder="E-mail cím"
               value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
+              onChange={e => setNewEmail(e.target.value)}
               required
               className="px-4 py-2 border rounded w-full"
               disabled={registering}
@@ -164,32 +183,34 @@ function RouteComponent() {
               type="text"
               placeholder="Telefonszám"
               value={newPhone}
-              onChange={(e) => setNewPhone(e.target.value)}
+              onChange={e => setNewPhone(e.target.value)}
               className="px-4 py-2 border rounded w-full"
               disabled={registering}
             />
             <select
               value={newRole}
-              onChange={(e) => setNewRole(e.target.value)}
+              onChange={e => setNewRole(e.target.value)}
               required
               className="px-4 py-2 border rounded w-full"
               disabled={registering}
             >
               <option value="">Jogosultság kiválasztása</option>
-              {roleOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.value}
-                </option>
+              {roleOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.value}</option>
               ))}
             </select>
-            <div className="sm:col-span-2 flex justify-end">
+            <div className="sm:col-span-2 flex justify-end space-x-2 mt-4">
+              <button
+                type="button"
+                onClick={() => setShowRegisterForm(false)}
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+                disabled={registering}
+              >Mégse</button>
               <button
                 type="submit"
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
                 disabled={registering}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50"
-              >
-                {registering ? "Regisztrálás..." : "Regisztrálás"}
-              </button>
+              >Regisztrálás</button>
             </div>
           </form>
         </div>
@@ -202,43 +223,41 @@ function RouteComponent() {
           placeholder="Globális keresés..."
           className="px-4 py-2 border rounded w-full"
           value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
+          onChange={e => setGlobalFilter(e.target.value)}
         />
         <input
           type="text"
           placeholder="Email keresés..."
           className="px-4 py-2 border rounded w-full"
           value={emailFilter}
-          onChange={(e) => setEmailFilter(e.target.value)}
+          onChange={e => setEmailFilter(e.target.value)}
         />
         <input
           type="text"
           placeholder="Telefonszám keresés..."
           className="px-4 py-2 border rounded w-full"
           value={phoneFilter}
-          onChange={(e) => setPhoneFilter(e.target.value)}
+          onChange={e => setPhoneFilter(e.target.value)}
         />
         <select
           className="px-4 py-2 border rounded w-full"
           value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
+          onChange={e => setRoleFilter(e.target.value)}
         >
           <option value="">Összes jogosultság</option>
-          {roleOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {`${opt.value} (${opt.count})`}
-            </option>
+          {roleOptions.map(opt => (
+            <option key={opt.value} value={opt.value}>{`${opt.value} (${opt.count})`}</option>
           ))}
         </select>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow">
+      <div className="overflow-x-auto bg-white rounded-lg shadow mb-6">
         <table className="min-w-full divide-y divide-gray-200 text-sm text-left">
           <thead className="bg-gray-100 text-gray-700">
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
                     className="px-4 py-3 font-medium cursor-pointer select-none"
@@ -249,13 +268,8 @@ function RouteComponent() {
                     }
                   >
                     <div className="flex items-center">
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                      {{ asc: " 🔼", desc: " 🔽" }[
-                        header.column.getIsSorted() as string
-                      ] ?? null}
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      {{ asc: ' 🔼', desc: ' 🔽'}[header.column.getIsSorted() as string] ?? null}
                     </div>
                   </th>
                 ))}
@@ -263,60 +277,26 @@ function RouteComponent() {
             ))}
           </thead>
           <tbody className="text-gray-800">
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="even:bg-gray-50 hover:bg-gray-100 transition"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="px-4 py-2 whitespace-nowrap"
-                  >
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext()
-                    )}
+            {table.getRowModel().rows.map(row => (
+              <tr key={row.id} className="even:bg-gray-50 hover:bg-gray-100">
+                {row.getVisibleCells().map(cell => (
+                  <td key={cell.id} className="px-4 py-2 whitespace-nowrap">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
               </tr>
             ))}
-            {table.getRowModel().rows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-6 text-center text-gray-500"
-                >
-                  Nincs találat.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex flex-col sm:flex-row items-center justify-between mt-4">
-        <div className="mb-2 sm:mb-0">
-          Oldal {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
-        </div>
-        <div className="space-x-2">
-          <button
-            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Előző
-          </button>
-          <button
-            className="px-4 py-1 bg-gray-200 rounded disabled:opacity-50"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Következő
-          </button>
-        </div>
-      </div>
+      {/* Vehicle registration section */}
+      {vehicleOwner && (
+        <VehicleManager
+          key={vehicleOwner.userId}
+          ownerId={vehicleOwner.userId}
+        />
+      )}
     </div>
   );
 }
