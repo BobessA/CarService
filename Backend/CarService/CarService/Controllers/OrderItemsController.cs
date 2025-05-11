@@ -166,5 +166,21 @@ namespace CarService.Controllers
                 return BadRequest(new GenericResponseDTO("OrderItems", "DELETE", ex.Message, null));
             }
         }
+
+        /// <summary>
+        /// Rendelések száma
+        /// </summary>
+        [HttpGet("count")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> GetOrderItemCount(CancellationToken cToken)
+        {
+            var count = await _context.OrderItems.CountAsync(cToken);
+            if (count == 0)
+                return NoContent();
+
+            return Ok(count);
+        }
+
     }
 }

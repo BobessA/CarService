@@ -133,5 +133,20 @@ namespace CarService.Controllers
             await _context.SaveChangesAsync(ct);
             return NoContent();
         }
+
+        /// <summary>
+        /// Szállítói rendelések száma
+        /// </summary>
+        [HttpGet("count")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> GetSupplierOrderCount(CancellationToken ct)
+        {
+            var count = await _context.SupplierOrders.CountAsync(ct);
+            if (count == 0)
+                return NoContent();
+            return Ok(count);
+        }
+
     }
 }

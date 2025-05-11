@@ -18,7 +18,7 @@ namespace CarService.Controllers
         }
 
         /// <summary>
-        /// Statisztikák lekérése (ügyfélszám, készlet, bevétel)
+        /// Statisztikák lekérése (ügyfélszám, készlet, bevétel, bejelentkezett autók)
         /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(StatisticsDTO), StatusCodes.Status200OK)]
@@ -51,8 +51,8 @@ namespace CarService.Controllers
                     Quantity = p.StockQuantity ?? 0,
                     MainCategory = cat.ParentId == null ? cat : cat.Parent!
                 }))
-                .GroupBy(x => new { x.ProductId, x.MainCategory.CategoryId }) // Duplák kiszűrése
-                .Select(x => x.First()) // egyedi termék-kategória párok
+                .GroupBy(x => new { x.ProductId, x.MainCategory.CategoryId })
+                .Select(x => x.First())
                 .GroupBy(x => x.MainCategory.CategoryName)
                 .Select(g => new CategoryCount
                 {
@@ -78,7 +78,7 @@ namespace CarService.Controllers
                         MainCategory = cat.ParentId == null ? cat : cat.Parent!
                     })
                 )
-                .GroupBy(x => new { x.OrderId, x.ProductId, x.MainCategory.CategoryId }) 
+                .GroupBy(x => new { x.OrderId, x.ProductId, x.MainCategory.CategoryId })
                 .Select(x => x.First())
                 .GroupBy(x => x.MainCategory.CategoryName)
                 .Select(g => new CategoryRevenue
@@ -88,8 +88,39 @@ namespace CarService.Controllers
                 })
                 .ToList();
 
-            // --- 4. Havi ügyfélszám ---
-             
+            // --- 4. Bejelentkezett autók (megrendelések darabszáma) ---
+            var orderCount = await _context.OrdersHeaders.CountAsync(cToken);
+
+            // --- 5. Árajánlatok (darabszáma) ---
+            var offerCount = await _context.Offers
+            .Where(o => o.StatusId == 1 || o.StatusId == 2)
+            .CountAsync(cToken);
+
+
+            //--- 6. Raktár (darabszáma) ---
+            var productCount = await _context.Products.CountAsync(cToken);
+
+            //--- 7. Munkafolyamatok (darabszáma) ---
+            var processCount = await _context.OrdersHeaders
+            .Where(o => o.StatusId == 6) // <<< Ide kerül a státuszkód, egyenlőre 6-os.
+            .CountAsync(cToken);
+
+
+            //--- 8. Ügyfelek (havi darabszáma) ---
+            var monthlyCustomerCount = await _context.Offers
+            .Where(o => o.RequestDate.Year == DateTime.Today.Year && o.RequestDate.Month == DateTime.Today.Month)
+            .CountAsync(cToken);
+
+            //--- 9. Beszállítói rendelések (darabszáma) ---
+            var supplierOrderCount = await _context.SupplierOrders.CountAsync(cToken);
+
+            //--- 10. Összesített bevétel ---
+            var totalRevenue = await _context.OrderItems
+            .SumAsync(oi => (decimal)oi.GrossAmount, cToken);
+
+            //--- 11. Járművek (darabszáma) ---
+            var vehicleCount = await _context.Vehicles.CountAsync(cToken);
+
 
 
             // --- Összesített eredmény ---
@@ -97,7 +128,15 @@ namespace CarService.Controllers
             {
                 CustomerCounts = groupedDays,
                 Inventory = inventory,
-                Revenue = revenue
+                Revenue = revenue,
+                OrderCount = orderCount,
+                OfferCount = offerCount,
+                ProductCount = productCount,
+                ProcessCount = processCount,
+                MonthlyCustomerCount = monthlyCustomerCount,
+                SupplierOrderCount = supplierOrderCount,
+                TotalRevenue = totalRevenue,
+                VehicleCount = vehicleCount
             };
 
             return Ok(result);

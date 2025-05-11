@@ -28,22 +28,33 @@ function RouteComponent() {
   const { user } = useAuth();
   const [carCount, setCarCount] = useState<number>(0);
   const [offerCount, setOfferCount] = useState<number>(0);
+  const [orderCount, setOrderCount] = useState<number>(0);
+  const [productCount, setProductCount] = useState<number>(0);
+  const [processCount, setProcessCount] = useState<number>(0);
+  const [monthlyCustomerCount, setMonthlyCustomerCount] = useState<number>(0);
+  const [supplierOrderCount, setSupplierOrderCount] = useState<number>(0);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
+  const [vehicleCount, setVehicleCount] = useState<number>(0);
+
 
   const [customerChartData, setCustomerChartData] = useState<any>(null);
   const [inventoryChartData, setInventoryChartData] = useState<any>(null);
   const [revenueChartData, setRevenueChartData] = useState<any>(null);
 
+
   useEffect(() => {
-    apiClient.get<number>(`/vehicles/count`, user?.userId)
-      .then(setCarCount)
-      .catch(err => console.error("Hiba a jármű lekérdezésben:", err));
-
-    apiClient.get<number>(`/offers/count`, user?.userId)
-      .then(setOfferCount)
-      .catch(err => console.error("Hiba az ajánlatok lekérdezésében:", err));
-
     apiClient.get<any>(`/statistics`, user?.userId)
       .then(data => {
+        setOrderCount(data.orderCount);
+        setOfferCount(data.offerCount);
+        setProductCount(data.productCount);
+        setMonthlyCustomerCount(data.monthlyCustomerCount);
+        setProcessCount(data.processCount);
+        setSupplierOrderCount(data.supplierOrderCount);
+        setTotalRevenue(data.totalRevenue);
+        setVehicleCount(data.vehicleCount);
+
+
         setCustomerChartData({
           labels: ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"],
           datasets: [
@@ -93,14 +104,30 @@ function RouteComponent() {
     <div className="p-6">
       {/* Kártyák */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link to="/admin/orders"><Card icon={<Car size={32} className="text-blue-500 mr-4" />} title="Bejelentkezett autók" data="15 aktív" /></Link>
-        <Link to="/admin/offers"><Card icon={<DollarSign size={32} className="text-green-500 mr-4" />} title="Árajánlatok" data={`${offerCount} függőben`} /></Link>
-        <Link to="/admin/products"><Card icon={<Package size={32} className="text-yellow-500 mr-4" />} title="Raktár" data="120 alkatrész" /></Link>
-        <Card icon={<Wrench size={32} className="text-red-500 mr-4" />} title="Munkafolyamatok" data="5 folyamatban" />
-        <Link to="/admin/users"><Card icon={<Users size={32} className="text-purple-500 mr-4" />} title="Ügyfélszám" data="230 ebben a hónapban" /></Link>
-        <Link to="/admin/productOrders"><Card icon={<ShoppingCart size={32} className="text-orange-500 mr-4" />} title="Alkatrész rendelések" data="12 új rendelés" /></Link>
-        <Card icon={<TrendingUp size={32} className="text-indigo-500 mr-4" />} title="Bevételek" data="$25,000" />
-        <Link to="/admin/cars"><Card icon={<Car size={32} className="text-indigo-500 mr-4" />} title="Regisztrált autók" data={`${carCount} autó az adatbázisban`} /></Link>
+        <Link to="/admin/orders">
+          <Card
+            icon={<Car size={32} className="text-blue-500 mr-4" />}
+            title="Bejelentkezett autók"
+            data={`${orderCount} aktív`}
+          />
+        </Link>
+        <Link to="/admin/offers">
+          <Card icon={<DollarSign size={32} className="text-green-500 mr-4" />} title="Árajánlatok" data={`${offerCount} függőben`} />
+        </Link>
+        <Link to="/admin/products">
+          <Card icon={<Package size={32} className="text-yellow-500 mr-4" />} title="Raktár" data={`${productCount} alkatrész`} />
+        </Link>
+        <Card icon={<Wrench size={32} className="text-red-500 mr-4" />} title="Munkafolyamatok" data={`${processCount} folyamatban`} />
+        <Link to="/admin/users">
+          <Card icon={<Users size={32} className="text-purple-500 mr-4" />} title="Ügyfélszám" data={`${monthlyCustomerCount} ebben a hónapban`} />
+        </Link>
+        <Link to="/admin/productOrders">
+          <Card icon={<ShoppingCart size={32} className="text-orange-500 mr-4" />} title="Alkatrész rendelések" data={`${supplierOrderCount} új rendelés`} />
+        </Link>
+        <Card icon={<TrendingUp size={32} className="text-indigo-500 mr-4" />} title="Bevételek" data={`$${totalRevenue.toLocaleString()}`} />
+        <Link to="/admin/cars">
+          <Card icon={<Car size={32} className="text-indigo-500 mr-4" />} title="Regisztrált autók" data={`${vehicleCount} autó az adatbázisban`} />
+        </Link>
       </div>
 
       {/* Grafikonok */}
