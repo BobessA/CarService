@@ -4,6 +4,7 @@ type User = {
     email: string;
     roleId: number;
     phone: string;
+    discount?: number;
   };
 
 export default User;
