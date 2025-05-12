@@ -15,6 +15,7 @@ interface Props {
   selectedOffer: OfferDTO | null;
   onRowClick: (orderId: number, offerId: number) => void;
   onAddItemClick: (orderId: number) => void;
+  currentUserId?: string;
 }
 
 export const OrderTable = ({
@@ -24,7 +25,8 @@ export const OrderTable = ({
   orderItemsByOrderId,
   selectedOffer,
   onRowClick,
-  onAddItemClick
+  onAddItemClick,
+  currentUserId
 }: Props) => {
   return (
     <table className="min-w-full divide-y divide-gray-200 text-sm text-left">
@@ -66,7 +68,7 @@ export const OrderTable = ({
               }
             >
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="px-4 py-2 whitespace-nowrap">
+                <td key={cell.id} className="px-4 py-2 whitespace-nowrap bg-red">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
@@ -74,8 +76,9 @@ export const OrderTable = ({
 
             {expandedOrderIds.includes(row.original.id) && (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-2 bg-gray-50">
+                <td colSpan={columns.length}>
                   <OrderDetails
+                    currUserId={currentUserId}
                     order={row.original}
                     selectedOffer={selectedOffer}
                     orderItems={orderItemsByOrderId[row.original.id]}

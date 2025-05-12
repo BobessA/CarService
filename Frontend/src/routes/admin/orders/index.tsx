@@ -181,6 +181,7 @@ return (
         selectedOffer={selectedOffer}
         onRowClick={handleRowClick}
         onAddItemClick={handleAddItemClick}
+        currentUserId={user?.userId}
       />
     </div>
 

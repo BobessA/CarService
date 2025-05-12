@@ -268,7 +268,7 @@ namespace CarService.Controllers{
                     CustomerId = offer.CustomerId,
                     VehicleId = offer.VehicleId,
                     OrderDate = offer.RequestDate,
-                    Comment = offer.AdminComment,
+                    AgentId = offer.AgentId,
                     StatusId = 3, // "Elfogadott" állapot
                 };
                 Console.WriteLine($"OrdersHeaders: {_context.OrdersHeaders.Local.Count()} új entitás van mentés előtt");
