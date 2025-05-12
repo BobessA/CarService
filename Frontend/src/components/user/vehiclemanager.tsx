@@ -72,10 +72,16 @@ const VehicleManager: FC<VehicleManagerProps> = ({ ownerId }) => {
       .finally(() => setLoading(false));
 
     apiClient.get<VehicleBrands[]>("/Vehicles/Brands", user?.userId)
-      .then(setBrands)
+      .then(data => {
+        const sorted = data.sort((a, b) => a.brandName.localeCompare(b.brandName));
+        setBrands(sorted);
+      })
       .catch(err => setError(err.message));
     apiClient.get<VehicleModells[]>("/Vehicles/Modells", user?.userId)
-      .then(setModells)
+      .then((data => {
+        const sorted = data.sort((a, b) => a.modellName.localeCompare(b.modellName));
+        setModells(sorted);
+      }))
       .catch(err => setError(err.message));
   }, [effectiveOwner, token]);
 

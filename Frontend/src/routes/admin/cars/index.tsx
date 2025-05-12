@@ -65,8 +65,8 @@ function RouteComponent() {
       apiClient.get<VehicleModells[]>("/Vehicles/Modells",user?.userId),
     ])
     .then(([brandsData, modellsData]) => {
-        setBrands(brandsData);
-        setModells(modellsData);
+        setBrands(brandsData.sort((a, b) => a.brandName.localeCompare(b.brandName)));
+        setModells(modellsData.sort((a, b) => a.modellName.localeCompare(b.modellName)));
     })
     .catch(err => console.error("Hiba a gyártók és modellek lekérésekor:", err));
   }, [user, user?.userId]);
@@ -80,29 +80,6 @@ function RouteComponent() {
     if (yearFilter) filters.push({ id: "yearOfManufacture", value: yearFilter });
     setColumnFilters(filters);
   }, [fuelFilter, brandFilter, modelFilter, yearFilter]);
-
-  // Derive options with counts
-  // const brandOptions = useMemo(() => {
-  //   const counts: Record<string, number> = {};
-  //   vehicles.forEach((v) => {
-  //     counts[v.brand] = (counts[v.brand] || 0) + 1;
-  //   });
-  //   return Object.entries(counts)
-  //     .map(([value, count]) => ({ value, count }))
-  //     .sort((a, b) => a.value.localeCompare(b.value));
-  // }, [vehicles]);
-
-  // const modelOptions = useMemo(() => {
-  //   const counts: Record<string, number> = {};
-  //   vehicles
-  //     .filter((v) => !brandFilter || v.brand === brandFilter)
-  //     .forEach((v) => {
-  //       counts[v.model] = (counts[v.model] || 0) + 1;
-  //     });
-  //   return Object.entries(counts)
-  //     .map(([value, count]) => ({ value, count }))
-  //     .sort((a, b) => a.value.localeCompare(b.value));
-  // }, [vehicles, brandFilter]);
 
   const yearOptions = useMemo(() => {
     const counts: Record<number, number> = {};
