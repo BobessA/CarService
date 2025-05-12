@@ -33,7 +33,7 @@ namespace CarService.Controllers
         [ProducesResponseType(typeof(List<OrdersHeaderDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO),StatusCodes.Status400BadRequest)]
-        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> GetOrders([FromQuery] int? orderId, [FromQuery] Guid? customerId, [FromQuery] int? statusId, CancellationToken cToken)
         {
             try

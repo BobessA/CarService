@@ -5,6 +5,7 @@ import apiClient from '../../utils/apiClient';
 import { format } from 'date-fns';
 import { OfferDTO } from '../../models/offerDTO';
 import { Vehicle } from '../../models/Vehicle';
+import User from '../../models/User';
 export const Route = createFileRoute('/offers/')({
   component: RouteComponent,
 })
@@ -15,6 +16,7 @@ function RouteComponent() {
   const [userVehicles, setUserVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agents, setAgents] = useState<User[]>([]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -24,6 +26,9 @@ function RouteComponent() {
     apiClient.get<Vehicle[]>(`/vehicles?userId=${user.userId}`, user.userId)
       .then(setUserVehicles)
       .catch(() => {});
+    apiClient.get<User[]>(`/Users`, user.userId)
+      .then(setAgents)
+      .catch(() => {});    
   }, [user, user?.userId, user?.userId]);
 
   useEffect(() => {
@@ -131,7 +136,7 @@ function RouteComponent() {
                   alert('Hiba az elutasítás során');
                 }
               };
-
+              
             return (
               <div key={offer.id} className={`bg-white p-6 rounded-lg shadow-md border-l-4 ${statusColor}`}>  
                 <div className="flex justify-between items-center">
@@ -142,7 +147,7 @@ function RouteComponent() {
                   <div>
                     <p><span className="font-medium">Jármű:</span> {vehicleMap[offer.vehicleId]}</p>
                     {offer.issueDescription && <p className="mt-1"><span className="font-medium">Probléma:</span> {offer.issueDescription}</p>}
-                    <p className="mt-1"><span className="font-medium">Agent ID:</span> {offer.agentId || '-'}</p>
+                    <p className="mt-1"><span className="font-medium">Ügyintéző:</span> {agents.find(a => a.userId === offer.agentId)?.name || '-'}</p>
                     <div className="mt-2">
                                 <span className="font-medium">Képek:</span>
                                 {offer.imagePaths && offer.imagePaths.length > 0 ? (
@@ -167,7 +172,7 @@ function RouteComponent() {
                   </div>
                   <div>
                     <p><span className="font-medium">Állapot:</span> {offer.statusName}</p>
-                    {offer.adminComment && <p className="mt-1"><span className="font-medium">Admin megjegyzés:</span> {offer.adminComment}</p>}
+                    {offer.adminComment && <p className="mt-1"><span className="font-medium">Ügyintéző megjegyzése:</span> {offer.adminComment}</p>}
                     {offer.appointmentDate && <p className="mt-1"><span className="font-medium">Időpont:</span> {format(new Date(offer.appointmentDate), 'yyyy.MM.dd. HH:mm')}</p>}
                     {offer.statusName === 'Elfogadásra vár' && (
                       <>
