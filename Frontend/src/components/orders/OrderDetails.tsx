@@ -71,7 +71,7 @@
     return (
       
       <div className="bg-gray-50 border rounded p-3">
-
+          <p>feriakiraj</p>
           <p>Megrendelő:</p>
           <p>
             {userData?.customer ? userData.customer.name : 'N/A'}
