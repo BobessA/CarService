@@ -1,8 +1,11 @@
 import React, { useState, useEffect, FC } from "react";
 import { Vehicle } from "../../models/Vehicle";
 import { useAuth } from "../../contexts/AuthContext";
+import { VehicleBrands } from "../../models/VehicleBrands";
+import { VehicleModells } from "../../models/VehicleModells";
 import apiClient from "../../utils/apiClient"; // centralized API client module
 import { validateVehicle } from "../../validations/vehicleManagerValidation";
+import CreatableSelect from 'react-select/creatable';
 
 interface FuelType {
   id: number;
@@ -19,40 +22,35 @@ const VehicleManager: FC<VehicleManagerProps> = ({ ownerId }) => {
   // Derive ownerId directly from props or fallback to current user
   const effectiveOwner = ownerId ?? user?.userId ?? "";
 
-  // Data states
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [editing, setEditing] = useState<Vehicle | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<Omit<Vehicle, 'id'>>({
+  const defaultForm: Omit<Vehicle, 'id'> ={
     licensePlate: "",
-    brand: "",
-    model: "",
-    yearOfManufacture: new Date().getFullYear(),
-    vin: "",
-    engineCode: "",
-    odometer: 0,
-    fuelType: 0,
-    ownerId: effectiveOwner,
-  });
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-
-  // Reset form whenever effectiveOwner changes
-  useEffect(() => {
-    setForm({
-      licensePlate: "",
       brand: "",
       model: "",
-      yearOfManufacture: new Date().getFullYear(),
+      yearOfManufacture: 0,
       vin: "",
       engineCode: "",
       odometer: 0,
       fuelType: 0,
       ownerId: effectiveOwner,
-    });
+  }
+
+  // Data states
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
+  const [brands, setBrands] = useState<VehicleBrands[]>([]);
+  const [modells, setModells] = useState<VehicleModells[]>([]);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [editing, setEditing] = useState<Vehicle | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState<Omit<Vehicle, 'id'>>(defaultForm);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Reset form whenever effectiveOwner changes
+  useEffect(() => {
+    setForm(defaultForm);
     setEditing(null);
     setShowForm(false);
     setValidationErrors([]);
@@ -72,6 +70,13 @@ const VehicleManager: FC<VehicleManagerProps> = ({ ownerId }) => {
       .then(setVehicles)
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
+
+    apiClient.get<VehicleBrands[]>("/Vehicles/Brands", user?.userId)
+      .then(setBrands)
+      .catch(err => setError(err.message));
+    apiClient.get<VehicleModells[]>("/Vehicles/Modells", user?.userId)
+      .then(setModells)
+      .catch(err => setError(err.message));
   }, [effectiveOwner, token]);
 
   // Open form for new or existing vehicle
@@ -90,7 +95,8 @@ const VehicleManager: FC<VehicleManagerProps> = ({ ownerId }) => {
   // Reset form/cancel
   const resetForm = () => {
     setEditing(null);
-    setForm(prev => ({ ...prev, ownerId: effectiveOwner }));
+    setForm(defaultForm);
+    //setForm(prev => ({ ...prev, ownerId: effectiveOwner }));
     setShowForm(false);
     setValidationErrors([]);
   };
@@ -123,6 +129,11 @@ const VehicleManager: FC<VehicleManagerProps> = ({ ownerId }) => {
   // Lookup fuel type name
   const getFuelName = (id: number) => fuelTypes.find(ft => ft.id === id)?.name || "";
 
+  const selectedBrand = brands.find(b => b.brandName === form.brand);
+  const filteredModells = selectedBrand
+    ? modells.filter(m => m.brandId === selectedBrand.id)
+    : [];
+    
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex justify-between items-center mb-4">
@@ -130,7 +141,9 @@ const VehicleManager: FC<VehicleManagerProps> = ({ ownerId }) => {
           {showForm ? (editing ? 'Jármű szerkesztése' : 'Új jármű regisztrálása') : 'Járművek'}
         </h2>
         {!showForm && (
-          <button onClick={() => openForm()} className="bg-green-600 text-white px-4 py-2 rounded">
+          <button onClick={() => {
+            openForm();
+          }} className="bg-green-600 text-white px-4 py-2 rounded">
             Új jármű
           </button>
         )}
@@ -144,18 +157,41 @@ const VehicleManager: FC<VehicleManagerProps> = ({ ownerId }) => {
           <input type="text" placeholder="Rendszám" value={form.licensePlate}
             onChange={e => setForm({ ...form, licensePlate: e.target.value })}
             readOnly={!!editing} required className="border p-2 rounded" />
-          <input type="text" placeholder="Márka" value={form.brand}
-            onChange={e => setForm({ ...form, brand: e.target.value })} required className="border p-2 rounded" />
-          <input type="text" placeholder="Típus" value={form.model}
-            onChange={e => setForm({ ...form, model: e.target.value })} required className="border p-2 rounded" />
-          <input type="number" placeholder="Gyártási év" value={form.yearOfManufacture}
+            <CreatableSelect
+              isClearable
+              placeholder="Márka"
+              value={form.brand ? { label: form.brand, value: form.brand } : null}
+              onChange={(option) => {
+                const selected = option?.value || "";
+                setForm({ ...form, brand: selected, model: "" });
+              }}
+              options={brands.map(b => ({ value: b.brandName, label: b.brandName }))}
+              formatCreateLabel={(inputValue) => `Új: "${inputValue}"`}
+              isDisabled={editing !== null}
+            />
+            <CreatableSelect
+              isClearable
+              placeholder="Típus"
+              value={form.model ? { label: form.model, value: form.model } : null}
+              onChange={(option) => {
+                const selected = option?.value || "";
+                setForm({ ...form, model: selected });
+              }}
+              options={filteredModells.map(m => ({ value: m.modellName, label: m.modellName }))}
+              formatCreateLabel={(inputValue) => `Új: "${inputValue}"`}
+              isDisabled={editing !== null}
+            />
+          <input type="number" placeholder="Gyártási év" value={form.yearOfManufacture === 0 ? "" : form.yearOfManufacture}
             onChange={e => setForm({ ...form, yearOfManufacture: Number(e.target.value) })}
-            min={1900} max={new Date().getFullYear()+1} required className="border p-2 rounded" />
+            min={1900} max={new Date().getFullYear()+1} required className="border p-2 rounded" 
+            readOnly={editing !== null}/>
           <input type="text" placeholder="Alvázszám" value={form.vin}
-            onChange={e => setForm({ ...form, vin: e.target.value })} required className="border p-2 rounded" />
+            onChange={e => setForm({ ...form, vin: e.target.value })} required className="border p-2 rounded" 
+            readOnly={editing !== null}/>
           <input type="text" placeholder="Motorkód" value={form.engineCode}
-            onChange={e => setForm({ ...form, engineCode: e.target.value })} required className="border p-2 rounded" />
-          <input type="number" placeholder="Odométer" value={form.odometer}
+            onChange={e => setForm({ ...form, engineCode: e.target.value })} required className="border p-2 rounded" 
+            readOnly={editing !== null}/>
+          <input type="number" placeholder="Odométer" value={form.odometer === 0 ? "" : form.odometer}
             onChange={e => setForm({ ...form, odometer: Number(e.target.value) })}
             min={0} required className="border p-2 rounded" />
           <select value={form.fuelType} onChange={e => setForm({ ...form, fuelType: Number(e.target.value) })} required className="border p-2 rounded">
