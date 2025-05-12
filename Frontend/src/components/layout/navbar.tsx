@@ -178,6 +178,12 @@ const Navbar: React.FC = () => {
                     >
                       Ajánlatok
                     </Link>
+                    <Link
+                      to="/orders"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      Megrendelések
+                    </Link>
                     <button
                       onClick={logout}
                       className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
