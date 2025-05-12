@@ -250,5 +250,12 @@ namespace CarService.DTOs
         [Required]
         [Display(Name = "Állandó kedvezmény százalék")]
         public short? discount { get; set; }
+
+        /// <summary>
+        /// Jogosultság
+        /// </summary>
+        /// <example>3</example>
+        [Display(Name = "Jogosultság")]
+        public int? roleId { get; set; }
     }
 }

@@ -107,7 +107,7 @@ function RouteComponent() {
         <Link to="/admin/orders">
           <Card
             icon={<Car size={32} className="text-blue-500 mr-4" />}
-            title="Bejelentkezett autók"
+            title="Megrendelések"
             data={`${orderCount} aktív`}
           />
         </Link>
@@ -115,16 +115,16 @@ function RouteComponent() {
           <Card icon={<DollarSign size={32} className="text-green-500 mr-4" />} title="Árajánlatok" data={`${offerCount} függőben`} />
         </Link>
         <Link to="/admin/products">
-          <Card icon={<Package size={32} className="text-yellow-500 mr-4" />} title="Raktár" data={`${productCount} alkatrész`} />
+          <Card icon={<Package size={32} className="text-yellow-500 mr-4" />} title="Termékek" data={`${productCount} alkatrész`} />
         </Link>
         <Card icon={<Wrench size={32} className="text-red-500 mr-4" />} title="Munkafolyamatok" data={`${processCount} folyamatban`} />
         <Link to="/admin/users">
-          <Card icon={<Users size={32} className="text-purple-500 mr-4" />} title="Ügyfélszám" data={`${monthlyCustomerCount} ebben a hónapban`} />
+          <Card icon={<Users size={32} className="text-purple-500 mr-4" />} title="Ügyfelek" data={`${monthlyCustomerCount} ebben a hónapban`} />
         </Link>
         <Link to="/admin/productOrders">
-          <Card icon={<ShoppingCart size={32} className="text-orange-500 mr-4" />} title="Alkatrész rendelések" data={`${supplierOrderCount} új rendelés`} />
+          <Card icon={<ShoppingCart size={32} className="text-orange-500 mr-4" />} title="Termékbeszerzés" data={`${supplierOrderCount} új rendelés`} />
         </Link>
-        <Card icon={<TrendingUp size={32} className="text-indigo-500 mr-4" />} title="Bevételek" data={`$${totalRevenue.toLocaleString()}`} />
+        <Card icon={<TrendingUp size={32} className="text-indigo-500 mr-4" />} title="Bevételek" data={`${totalRevenue.toLocaleString()} Ft`} />
         <Link to="/admin/cars">
           <Card icon={<Car size={32} className="text-indigo-500 mr-4" />} title="Regisztrált autók" data={`${vehicleCount} autó az adatbázisban`} />
         </Link>

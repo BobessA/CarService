@@ -130,7 +130,7 @@ namespace CarService.Controllers
                 {
                     Name = request.name,
                     Discount = request.discount,
-                    RoleId = 3,
+                    RoleId = request.roleId ?? 3,
                     Phone = request.phone,
                     Email = request.email,
                 };

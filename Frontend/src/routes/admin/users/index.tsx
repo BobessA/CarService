@@ -14,6 +14,7 @@ import {
 import User from "../../../models/User";
 import { useAuth } from "../../../contexts/AuthContext";
 import apiClient from "../../../utils/apiClient";
+import { RoleData } from "../../../models/RoleData";
 import VehicleManager from "../../../components/user/vehiclemanager";
 
 function RouteComponent() {
@@ -21,6 +22,7 @@ function RouteComponent() {
 
   // Data
   const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<RoleData[]>([]);
 
   // Filters
   const [globalFilter, setGlobalFilter] = useState<string>("");
@@ -50,7 +52,14 @@ function RouteComponent() {
       .catch((err) =>
         console.error("Hiba a felhasználók lekérdezésében: ", err)
       );
+    apiClient
+      .get<RoleData[]>(`/roles`, user.userId)
+      .then(setRoles)
+      .catch((err) =>
+        console.error("Hiba a jogok lekérdezésében: ", err)
+      );
   };
+
   useEffect(() => {
     loadUsers();
   }, [user]);
@@ -82,7 +91,21 @@ function RouteComponent() {
       { accessorKey: "name", header: "Név" },
       { accessorKey: "email", header: "E-mail cím" },
       { accessorKey: "phone", header: "Telefonszám" },
-      { accessorKey: "roleId", header: "Jogosultság" },
+      { 
+        id: "roleId", 
+        accessorKey: "roleId",
+        header: "Jogosultság", 
+        cell: ({ row }) => {
+          const roleId = row.original.roleId;
+          const role = roles.find((r) => r.id === roleId);
+          return role ? role.name : "Ismeretlen jogosultság";
+        },
+        filterFn: (row, id, filterValue) => {
+          const rowValue = String(row.getValue(id)); 
+          const filterNumber = String(filterValue); 
+          return rowValue === filterNumber;
+        },
+      },
       {
         id: "vehicles",
         header: "Jármű regisztrálása",
@@ -96,7 +119,7 @@ function RouteComponent() {
         ),
       },
     ],
-    []
+    [roles]
   );
 
   const table = useReactTable({
@@ -119,6 +142,7 @@ function RouteComponent() {
     setRegistering(true);
     setRegisterError(null);
     try {
+      console.log(newName, newEmail, newPhone, newRole);
       await apiClient.post(
         "/users",
         {
@@ -195,8 +219,8 @@ function RouteComponent() {
               disabled={registering}
             >
               <option value="">Jogosultság kiválasztása</option>
-              {roleOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.value}</option>
+              {roles.map(role => (
+                <option key={role.id} value={role.id}>{role.name}</option>
               ))}
             </select>
             <div className="sm:col-span-2 flex justify-end space-x-2 mt-4">
@@ -245,13 +269,14 @@ function RouteComponent() {
           onChange={e => setRoleFilter(e.target.value)}
         >
           <option value="">Összes jogosultság</option>
-          {roleOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>{`${opt.value} (${opt.count})`}</option>
+          {roles.map(role => (
+            <option key={role.id} value={role.id}>{role.name}</option>
           ))}
         </select>
       </div>
 
       {/* Table */}
+      {roles.length > 0 ? (
       <div className="overflow-x-auto bg-white rounded-lg shadow mb-6">
         <table className="min-w-full divide-y divide-gray-200 text-sm text-left">
           <thead className="bg-gray-100 text-gray-700">
@@ -289,7 +314,9 @@ function RouteComponent() {
           </tbody>
         </table>
       </div>
-
+      ) : (
+        <div>Betöltés...</div>
+      )};
       {/* Vehicle registration section */}
       {vehicleOwner && (
         <VehicleManager
