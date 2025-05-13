@@ -67,8 +67,6 @@ function RouteComponent() {
       { accessorKey: "offerId", header: "offerId" },
       { accessorKey: "statusName", header:  "Státusz" },
       { accessorKey: "orderDate", header: "Rendelés dátuma" },
-
-
     ], []);
 
   const table = useReactTable({

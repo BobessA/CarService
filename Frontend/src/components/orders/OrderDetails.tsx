@@ -6,6 +6,7 @@
   import User from "../../models/User";
   import apiClient from "../../utils/apiClient";
   import { useEffect, useState } from "react";
+  import { Vehicle } from "../../models/Vehicle"
 
   const fetchUserData = async (customerId: string, agentId: string, mechanicId: string, currentId?:string) => {
 
@@ -39,6 +40,16 @@
     }
   };
 
+const fetchCarData = async (vehicleId: number, currentId?: string): Promise<Vehicle | null> => {
+  try {
+    const response = await apiClient.get<Vehicle[]>(`/Vehicles?vehicleId=${vehicleId}`, currentId);
+    return response[0] || null;
+  } catch (err) {
+    console.error("Unexpected error while fetching vehicle data:", err);
+    return null;
+  }
+};
+
   export const OrderDetails = ({ 
     order, 
     selectedOffer, 
@@ -59,14 +70,24 @@
     mechanic: User | null;
   } | null>(null);
 
-      useEffect(() => {
-      const loadUserData = async () => {
-        const data = await fetchUserData(order.customerId, order.agentId, order.mechanicId, currUserId );
-        setUserData(data);
-      };
+  const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
 
-      loadUserData();
-    }, [order.customerId, order.agentId, order.mechanicId]);
+  useEffect(() => {
+    const loadUserData = async () => {
+      const data = await fetchUserData(order.customerId, order.agentId, order.mechanicId, currUserId );
+      setUserData(data);
+    };
+    loadUserData();
+  }, [order.customerId, order.agentId, order.mechanicId]);
+
+
+useEffect(() => {
+  const loadCarData = async () => {
+    const vdata = await fetchCarData(order.vehicleId, currUserId);
+    setVehicleData(vdata);
+  };
+  loadCarData();
+}, [order.vehicleId, currUserId]);
 
     return (
       
@@ -88,10 +109,18 @@
             </tr>
           </tbody>
         </table>
-
-        <p></p>
+        
 
           <div className="mt-6 w-full overflow-x-auto">
+
+            {vehicleData && (
+              <div className="mb-3">
+                <label className="form-label fw-bold">Autó:  </label>
+                <p className="border rounded"> {vehicleData.yearOfManufacture} {vehicleData.brand} {vehicleData.model} ({vehicleData.licensePlate})</p>
+              </div>
+            )}
+
+
             <div className="mb-3">
               <label className="form-label fw-bold">Probléma leírása:</label>
               <input type="text" className="w-full p-2 border rounded" 
