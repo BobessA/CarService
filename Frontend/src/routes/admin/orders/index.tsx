@@ -14,10 +14,12 @@ import apiClient from "../../../utils/apiClient";
 
 import { OrderTable } from "../../../components/orders/OrderTable";
 import { AddItemModal } from "../../../components/orders/AddItemModal";
-import { Pagination } from "../../../components/orders/Pagination"
+import { Pagination } from "../../../components/orders/Pagination";
+import { AddOrderForm } from "../../../components/orders/AddOrderForm";
  
 // Modellek/Típusok
 import { OrderHeadersDTO } from "../../../models/OrderHeadersDTO";
+import { OrderCreateDTO } from "../../../models/OrderCreateDTO";
 import { OfferDTO } from "../../../models/offerDTO";
 import { OrderItem } from "../../../models/OrderItem";
 import { Product } from "../../../models/Product";
@@ -32,6 +34,7 @@ function RouteComponent() {
   const [selectedOffer, setSelectedOffer] = useState<OfferDTO | null>(null);
   const [orderItemsByOrderId, setOrderItemsByOrderId] = useState<OrderItemsByOrderId>({});
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
   const [newOrderItem, setNewOrderItem] = useState<OrderItem>({
     id: 0,
     orderId: 0,
@@ -42,6 +45,20 @@ function RouteComponent() {
     grossAmount: 0,
     comment: "",
   });
+
+  const handleSaveOrder = async (order: OrderCreateDTO) => {
+  try {
+    await apiClient.post("/OrdersHeader", order, user?.userId);
+
+    const ordersResponse = await apiClient.get<OrderHeadersDTO[]>('/OrdersHeader', user?.userId);
+    setOrders(ordersResponse);
+
+    setIsAddOrderOpen(false);
+  } catch (err) {
+    console.error("Error adding order:", err);
+    alert("Hiba történt a rendelés hozzáadásakor.");
+  }
+};
 
   const columns = useMemo<ColumnDef<OrderHeadersDTO>[]>(
     () => [
@@ -171,6 +188,24 @@ function RouteComponent() {
 return (
   <div className="max-w-full mx-auto p-4 sm:p-6">
     <h1 className="text-2xl font-bold mb-4">Rendelések</h1>
+
+    <div className="mb-4">
+      <button
+        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-green-700"
+        onClick={() => setIsAddOrderOpen(prev => !prev)}
+      >
+        {isAddOrderOpen ? 'Bezárás' : 'Új rendelés hozzáadása'}
+      </button>
+
+      {isAddOrderOpen && (
+        <AddOrderForm
+          onSave={handleSaveOrder}
+          onCancel={() => setIsAddOrderOpen(false)}
+          currentUserId={user?.userId}
+        />
+      )}
+    </div>
+
 
     <div className="overflow-x-auto bg-white rounded-lg shadow">
       <OrderTable 

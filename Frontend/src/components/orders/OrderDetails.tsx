@@ -71,20 +71,25 @@
     return (
       
       <div className="bg-gray-50 border rounded p-3">
-          <p>feriakiraj</p>
-          <p>Megrendelő:</p>
-          <p>
-            {userData?.customer ? userData.customer.name : 'N/A'}
-          </p>
-          <p>Ügyintéző:</p>
-          <p>
-            {userData?.agent ? userData.agent.name : 'N/A'}
-          </p>
-          <p>Szerelő:</p>
-          <p>
-            {userData?.mechanic ? userData.mechanic.name : 'N/A'}
-          </p>
 
+        <table className="min-w-full text-sm text-left border">
+          <thead>
+            <tr>
+              <th className="px-4 py-2 border">Megrendelő</th>
+              <th className="px-4 py-2 border">Ügyintéző</th>
+              <th className="px-4 py-2 border">Szerelő</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="px-4 py-2 border">{userData?.customer ? userData.customer.name : 'N/A'}</td>
+              <td className="px-4 py-2 border">{userData?.agent ? userData.agent.name : 'N/A'}</td>
+              <td className="px-4 py-2 border">{userData?.mechanic ? userData.mechanic.name : 'N/A'}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p></p>
 
           <div className="mt-6 w-full overflow-x-auto">
             <div className="mb-3">

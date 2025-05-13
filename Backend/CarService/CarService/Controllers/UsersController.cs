@@ -282,5 +282,46 @@ namespace CarService.Controllers
                 return Unauthorized();
             }
         }
+
+
+
+        /// <summary>
+        /// Userek keresése név vagy email alapján
+        /// </summary>
+        /// <param name="query">Keresett szöveg (név vagy email)</param>
+        /// <param name="cToken">CancellationToken</param>
+        /// <returns>UserDTO list, 400, 204</returns>
+        [HttpGet("Search")]
+        [ProducesResponseType(typeof(List<UserDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
+        public async Task<IActionResult> SearchUsers([FromQuery] string query, CancellationToken cToken)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return BadRequest(new GenericResponseDTO("Users/Search", "GET", "Query parameter is required", null));
+            }
+
+            var users = await _context.Users
+                .Where(u => u.Name.Contains(query) || u.Email.Contains(query))
+                .Select(u => new UserDTO
+                {
+                    userId = u.Id,
+                    name = u.Name,
+                    email = u.Email,
+                    phone = u.Phone,
+                    roleId = u.RoleId,
+                    discount = u.Discount,
+                })
+                .ToListAsync(cToken);
+
+            if (users == null || users.Count == 0)
+            {
+                return NoContent();
+            }
+
+            return Ok(users);
+        }
     }
 }
