@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using CarService.Models;
 using CarService.DTOs;
-using CarService.Helpers;
 using CarService.Attributes;
 using static CarService.Helpers.AuthHelper;
+using static CarService.Services.OrderService;
+using CarService.Services;
 
 namespace CarService.Controllers
 {
@@ -99,6 +100,8 @@ namespace CarService.Controllers
             await _context.OrderItems.AddAsync(item, cToken);
             await _context.SaveChangesAsync(cToken);
 
+            await OrderService.UpdateOrderAmountsAsync(_context, request.orderId, cToken);
+
             return Ok();
         }
 
@@ -116,9 +119,11 @@ namespace CarService.Controllers
         public async Task<IActionResult> PutOrderItem([FromBody] UpdateOrderItemRequest request, CancellationToken cToken)
         {
             var item = await _context.OrderItems.FirstOrDefaultAsync(i => i.Id == request.id, cToken);
-
+            
             if (item == null)
                 return NotFound();
+
+            int orderId = item.OrderId;
 
             item.Quantity = request.quantity ?? item.Quantity;
             item.UnitPrice = request.unitPrice ?? item.UnitPrice;
@@ -129,6 +134,7 @@ namespace CarService.Controllers
             try
             {
                 await _context.SaveChangesAsync(cToken);
+                await OrderService.UpdateOrderAmountsAsync(_context, orderId, cToken);
                 return Ok();
             }
             catch (Exception ex)
