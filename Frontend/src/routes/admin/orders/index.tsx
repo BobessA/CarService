@@ -85,7 +85,7 @@ function RouteComponent() {
     const fetchData = async () => {
       try {
         const [ordersResponse, productsResponse] = await Promise.all([
-          apiClient.get<OrderHeadersDTO[]>('/OrdersHeader?statusId=3&statusId=6', user.userId),
+          apiClient.get<OrderHeadersDTO[]>('/OrdersHeader?statusId=3&statusId=6&statusId=4', user.userId),
           apiClient.get<Product[]>('/Products', user.userId)
         ]);
         setOrders(ordersResponse);

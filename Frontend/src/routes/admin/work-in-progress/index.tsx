@@ -112,7 +112,7 @@ function RouteComponent() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">
-      <h1 className="text-2xl font-bold mb-4 text-center">Rendelések</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">Munkafolyamatok</h1>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', rowGap: '50px' }}>
         {orders.map(order => {
           const statusColorClass = statusColor(order.statusId);
