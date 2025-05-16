@@ -162,6 +162,7 @@ function RouteComponent() {
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 >Új tétel hozzáadása</button>
                 <button
+                  style={order.statusId === 4 ? { display: 'none' } : {}}
                   onClick={() => changeStatus(order.id)}
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >Státusz váltása</button>
