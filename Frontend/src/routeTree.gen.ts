@@ -29,7 +29,7 @@ import { Route as AdminProductsIndexImport } from './routes/admin/products/index
 import { Route as AdminProductOrdersIndexImport } from './routes/admin/productOrders/index'
 import { Route as AdminOrdersIndexImport } from './routes/admin/orders/index'
 import { Route as AdminOffersIndexImport } from './routes/admin/offers/index'
-import { Route as AdminCarsIndexImport } from './routes/admin/cars./routes/admin/work-in-progress
+import { Route as AdminCarsIndexImport } from './routes/admin/cars/index'
 
 // Create/Update Routes
 

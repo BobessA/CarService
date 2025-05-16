@@ -4,6 +4,7 @@ import { authGuard } from "../../../utils/authGuard";
 import { useAuth } from "../../../contexts/AuthContext";
 import apiClient from "../../../utils/apiClient";
 import { AddItemModal } from "../../../components/orders/AddItemModal";
+import { OrderItemsTable } from "../../../components/orders/OrderItemsTable";
 
 // Modellek/Típusok
 import { OrderHeadersDTO } from "../../../models/OrderHeadersDTO";
@@ -77,13 +78,11 @@ function RouteComponent() {
     }
   };
 
-  // compute next status in sequence 3->6->4->3
   const nextStatus = (current: number) => {
     if (current === 3) return 6;
     if (current === 6) return 4;
     return 4;
   };
-
   const changeStatus = async (orderId: number) => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
@@ -125,7 +124,7 @@ function RouteComponent() {
             <div
               key={order.id}
               className={`bg-white p-6 rounded-lg shadow-md border-l-4 ${statusColorClass}`} 
-              style={{ width: '66%', margin: '0 auto', marginBottom: '50px' }}
+              style={{ width: '100%', margin: '0 auto', marginBottom: '50px' }}
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold text-gray-800">
@@ -154,40 +153,15 @@ function RouteComponent() {
               </div>
 
               {/* Tételek */}
-              {items.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="font-medium mb-2">Eddigi tételek:</h4>
-                  <table className="w-full text-sm text-left text-gray-700 border border-gray-200 rounded">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="px-2 py-1">Megnevezés</th>
-                        <th className="px-2 py-1">Mennyiség</th>
-                        <th className="px-2 py-1">Eladási ár</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map(it => {
-                        const prod = products.find(p => p.productId === it.productId);
-                        return (
-                          <tr key={it.id} className="odd:bg-white even:bg-gray-50">
-                            <td className="px-2 py-1 font-medium">{prod?.name||it.productId}</td>
-                            <td className="px-2 py-1">{it.quantity}</td>
-                            <td className="px-2 py-1">{prod?.sellingPrice?.toFixed(2)} Ft</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              {items.length !== 0 && <OrderItemsTable orderItems={items.map(it => ({ ...it, product: products.find(p => p.productId === it.productId) }))} />
+ }
 
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 mt-4">
                 <button
                   onClick={() => openAddItem(order.id)}
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 >Új tétel hozzáadása</button>
                 <button
-                  style={order.statusId === 4 ? { display: 'none' } : {}}
                   onClick={() => changeStatus(order.id)}
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >Státusz váltása</button>
