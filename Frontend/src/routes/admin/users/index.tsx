@@ -39,6 +39,7 @@ function RouteComponent() {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
+  const [newDiscount, setNewDiscount] = useState(0);
   const [newRole, setNewRole] = useState<string>("");
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
@@ -74,16 +75,16 @@ function RouteComponent() {
   }, [phoneFilter, roleFilter, emailFilter]);
 
   // Role options count
-  const roleOptions = useMemo(() => {
-    const counts: Record<string, number> = {};
-    users.forEach((u) => {
-      counts[String(u.roleId)] = (counts[String(u.roleId)] || 0) + 1;
-    });
-    return Object.entries(counts).map(([value, count]) => ({
-      value,
-      count,
-    }));
-  }, [users]);
+  // const roleOptions = useMemo(() => {
+  //   const counts: Record<string, number> = {};
+  //   users.forEach((u) => {
+  //     counts[String(u.roleId)] = (counts[String(u.roleId)] || 0) + 1;
+  //   });
+  //   return Object.entries(counts).map(([value, count]) => ({
+  //     value,
+  //     count,
+  //   }));
+  // }, [users]);
 
   // Table columns
   const columns = useMemo<ColumnDef<User>[]>(
@@ -106,6 +107,7 @@ function RouteComponent() {
           return rowValue === filterNumber;
         },
       },
+      { accessorKey: "discount", header: "Kedvezmény %" },
       {
         id: "vehicles",
         header: "Jármű regisztrálása",
@@ -150,8 +152,7 @@ function RouteComponent() {
           email: newEmail,
           phone: newPhone,
           roleId: newRole,
-          password: "CarService001",
-          discount: 0
+          discount: newDiscount
         },
         user.userId
       );
@@ -160,6 +161,7 @@ function RouteComponent() {
       setNewEmail("");
       setNewPhone("");
       setNewRole("");
+      setNewDiscount(0);
       loadUsers();
     } catch (err: any) {
       setRegisterError(err.message || "Hiba a regisztrálás során");
@@ -184,7 +186,7 @@ function RouteComponent() {
       {showRegisterForm && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           {registerError && <p className="text-red-600 mb-2">{registerError}</p>}
-          <form onSubmit={handleRegister} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleRegister} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <input
               type="text"
               placeholder="Név"
@@ -208,6 +210,14 @@ function RouteComponent() {
               placeholder="Telefonszám"
               value={newPhone}
               onChange={e => setNewPhone(e.target.value)}
+              className="px-4 py-2 border rounded w-full"
+              disabled={registering}
+            />
+            <input
+              type="number"
+              placeholder="Kedvezmény százalék"
+              value={newDiscount === 0 ? '' : newDiscount}
+              onChange={e => setNewDiscount(parseInt(e.target.value))}
               className="px-4 py-2 border rounded w-full"
               disabled={registering}
             />
