@@ -117,7 +117,9 @@ function RouteComponent() {
         <Link to="/admin/products">
           <Card icon={<Package size={32} className="text-yellow-500 mr-4" />} title="Termékek" data={`${productCount} alkatrész`} />
         </Link>
+        <Link to="/admin/work-in-progress">
         <Card icon={<Wrench size={32} className="text-red-500 mr-4" />} title="Munkafolyamatok" data={`${processCount} folyamatban`} />
+        </Link>
         <Link to="/admin/users">
           <Card icon={<Users size={32} className="text-purple-500 mr-4" />} title="Ügyfelek" data={`${monthlyCustomerCount} ebben a hónapban`} />
         </Link>

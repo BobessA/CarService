@@ -34,7 +34,7 @@ namespace CarService.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO),StatusCodes.Status400BadRequest)]
         [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
-        public async Task<IActionResult> GetOrders([FromQuery] int? orderId, [FromQuery] Guid? customerId, [FromQuery] int? statusId, CancellationToken cToken)
+        public async Task<IActionResult> GetOrders([FromQuery] int? orderId,[FromQuery] Guid? customerId,[FromQuery] int[]? statusId,CancellationToken cToken)
         {
             try
             {
@@ -43,13 +43,13 @@ namespace CarService.Controllers
                     .AsQueryable();
 
                 if (orderId.HasValue)
-                    query = query.Where(o => o.Id == orderId);
+                    query = query.Where(o => o.Id == orderId.Value);
 
                 if (customerId.HasValue)
                     query = query.Where(o => o.CustomerId == customerId.Value);
 
-                if (statusId.HasValue)
-                    query = query.Where(o => o.StatusId == statusId.Value);
+                if (statusId != null && statusId.Length > 0)
+                    query = query.Where(o => statusId.Contains(o.StatusId));
 
                 var result = await query.Select(o => new OrdersHeaderDTO
                 {
@@ -72,8 +72,8 @@ namespace CarService.Controllers
                     return NoContent();
 
                 return Ok(result);
-
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new GenericResponseDTO("OrdersHeader", "GET", ex.Message, null));
             }
