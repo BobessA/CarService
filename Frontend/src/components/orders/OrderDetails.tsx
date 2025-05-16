@@ -7,6 +7,7 @@
   import apiClient from "../../utils/apiClient";
   import { useEffect, useState } from "react";
   import { Vehicle } from "../../models/Vehicle"
+  import { generateAndOpenOrderPdf } from '../../services/pdfGenerator';
 
   const fetchUserData = async (customerId: string, agentId: string, mechanicId: string, currentId?:string) => {
 
@@ -181,12 +182,18 @@ useEffect(() => {
               </table>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 flex mb-4 px-3 justify-between items-center">
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                 onClick={() => onAddItemClick(order.id)}
               >
                 Új tétel hozzáadása
+              </button>
+              <button
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                onClick={() => generateAndOpenOrderPdf(order.id,currUserId ? currUserId : '')}
+              >
+                Nyomtatás
               </button>
             </div>
 
