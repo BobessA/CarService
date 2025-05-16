@@ -168,7 +168,18 @@ useEffect(() => {
               <OrderItemsTable orderItems={orderItems} />
             )}
 
-            <div></div>
+            <div className="min-w-full text-sm text-left ">
+              <table className="min-w-full text-sm text-left border">
+                <tr>
+                  <th className="border py-2 px-2 bg-green-50">Nettó végösszeg</th>
+                  <th className="border py-2 px-2 bg-green-50">Bruttó végösszeg</th>
+                </tr>
+                <tr>
+                  <td className="border py-2 px-2">{order.netAmount} Ft</td>
+                  <td className="border py-2 px-2">{order.grossAmount} Ft</td>
+                </tr>
+              </table>
+            </div>
 
             <div className="mt-4">
               <button
@@ -177,6 +188,9 @@ useEffect(() => {
               >
                 Új tétel hozzáadása
               </button>
+            </div>
+
+            <div>
             </div>
           </div>
       </div>
