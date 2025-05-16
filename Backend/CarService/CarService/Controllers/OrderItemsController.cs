@@ -4,7 +4,6 @@ using CarService.Models;
 using CarService.DTOs;
 using CarService.Attributes;
 using static CarService.Helpers.AuthHelper;
-using static CarService.Services.OrderService;
 using CarService.Services;
 
 namespace CarService.Controllers
@@ -97,10 +96,16 @@ namespace CarService.Controllers
                 Comment = request.comment
             };
 
+            var product = await _context.Products.Where(p => p.ProductId == request.productId).FirstOrDefaultAsync(cToken);
+            if (product != null)
+                product.StockQuantity = product.StockQuantity - item.Quantity;
+
             await _context.OrderItems.AddAsync(item, cToken);
             await _context.SaveChangesAsync(cToken);
 
             await OrderService.UpdateOrderAmountsAsync(_context, request.orderId, cToken);
+
+
 
             return Ok();
         }
@@ -124,12 +129,20 @@ namespace CarService.Controllers
                 return NotFound();
 
             int orderId = item.OrderId;
+            double originalQuantity = item.Quantity;
 
             item.Quantity = request.quantity ?? item.Quantity;
             item.UnitPrice = request.unitPrice ?? item.UnitPrice;
             item.NetAmount = request.netAmount ?? item.NetAmount;
             item.GrossAmount = request.grossAmount ?? item.GrossAmount;
             item.Comment = request.comment ?? item.Comment;
+
+            if (originalQuantity != item.Quantity)
+            {
+                var product = await _context.Products.Where(p => p.ProductId == item.ProductId).FirstOrDefaultAsync(cToken);
+                if (product != null)
+                    product.StockQuantity = product.StockQuantity + originalQuantity - item.Quantity;
+            }
 
             try
             {
@@ -160,6 +173,10 @@ namespace CarService.Controllers
 
             if (item == null)
                 return NotFound();
+
+            var product = await _context.Products.Where(p => p.ProductId == item.ProductId).FirstOrDefaultAsync(cToken);
+            if (product != null)
+                product.StockQuantity = product.StockQuantity + item.Quantity;
 
             try
             {
