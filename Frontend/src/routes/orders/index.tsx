@@ -7,6 +7,7 @@ import { OrderHeadersDTO } from '../../models/OrderHeadersDTO';
 import { OfferDTO } from '../../models/offerDTO';
 import { Vehicle } from '../../models/Vehicle';
 import User from '../../models/User';
+import { generateAndOpenOrderPdf } from '../../services/pdfGenerator';
 
 export const Route = createFileRoute('/orders/')({
   component: RouteComponent,
@@ -121,6 +122,12 @@ function RouteComponent() {
                     <p><span className="font-medium">Állapot:</span> {order.statusName}</p>
                     {order.orderDate && <p className="mt-1"><span className="font-medium">Megrendelés időpontja:</span> {format(new Date(order.orderDate), 'yyyy.MM.dd. HH:mm')}</p>}
                     {offers.find(o => o.id === order.offerId)?.appointmentDate && <p className="mt-1"><span className="font-medium">Jármű leadásának időpontja:</span> {format(new Date(offers.find(o => o.id === order.offerId)?.appointmentDate ?? ""), 'yyyy.MM.dd. HH:mm')}</p>}
+                    <>
+                      <button className="mt-4 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
+                        onClick={() => generateAndOpenOrderPdf(order.id,user !== null ? user.userId : '')}>
+                          Nyomtatás
+                      </button>
+                    </>
                   </div>
                 </div>
               </div>

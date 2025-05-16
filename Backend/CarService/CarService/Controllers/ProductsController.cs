@@ -31,7 +31,7 @@ namespace CarService.Controllers
         [ProducesResponseType(typeof(List<ProductsDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(GenericResponseDTO), StatusCodes.Status400BadRequest)]
-        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner)]
+        [AuthorizeRole(UserRole.Mechanic, UserRole.Admin, UserRole.Owner, UserRole.Customer)]
         public async Task<IActionResult> GetProducts(string? productId, string? name, CancellationToken cToken)
         {
             var query = _context.Products.AsQueryable();

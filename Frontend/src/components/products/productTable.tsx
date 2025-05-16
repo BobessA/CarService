@@ -6,7 +6,6 @@ import { ProductCategoryTreeData } from "../../models/ProductCategoryTreeData";
 import ProductDetails from "../../components/products/productDetails";
 import ProductCategories from "../../components/products/productCategories";
 import { validateProductData } from "../../validations/productDataValidation";
-import { generateAndOpenOrderPdf } from "../../services/pdfGenerator";
 
 interface Props {
   products: ProductData[];
@@ -200,13 +199,6 @@ const ProductTable: React.FC<Props> = (props) => {
                             <div className="flex gap-2">
                               {!editingStates[product.productId] ? (
                                 <>
-                                  <button
-                                    className="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700"
-                                    onClick={() => {
-                                      generateAndOpenOrderPdf(1,'086E10E9-7C07-4830-A3EA-CEA77BFB4C66');
-                                    }} >
-                                    Nyomtatás
-                                  </button>
                                   <button
                                     className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
                                     onClick={() => {

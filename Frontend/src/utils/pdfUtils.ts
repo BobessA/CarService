@@ -116,7 +116,7 @@ export function generateOrderPdf(order : OrderPdfData, customer : User, administ
         },
         '\n',
         { text: 'A megrendeléssel kapcsolatos megjegyzések', style: 'label', },
-        { text: `${order.comment}`, style: 'tableData', },
+        { text: `${order.comment ?? "-"}`, style: 'tableData', },
         '\n',
         { text: 'Tételek', style: 'subheader', },
         {
@@ -232,8 +232,4 @@ const dateFormat = (date: string) : string => {
   } catch {
     return date;
   }
-}
-
-const sumPrices = () : number => {
-  return 0;
 }

@@ -7,6 +7,7 @@
   import apiClient from "../../utils/apiClient";
   import { useEffect, useState } from "react";
   import { Vehicle } from "../../models/Vehicle"
+  import { generateAndOpenOrderPdf } from '../../services/pdfGenerator';
 
   const fetchUserData = async (customerId: string, agentId: string, mechanicId: string, currentId?:string) => {
 
@@ -168,9 +169,20 @@ useEffect(() => {
               <OrderItemsTable orderItems={orderItems} />
             )}
 
-            <div></div>
+            <div className="min-w-full text-sm text-left ">
+              <table className="min-w-full text-sm text-left border">
+                <tr>
+                  <th className="border py-2 px-2 bg-green-50">Nettó végösszeg</th>
+                  <th className="border py-2 px-2 bg-green-50">Bruttó végösszeg</th>
+                </tr>
+                <tr>
+                  <td className="border py-2 px-2">{order.netAmount} Ft</td>
+                  <td className="border py-2 px-2">{order.grossAmount} Ft</td>
+                </tr>
+              </table>
+            </div>
 
-            <div className="mt-4">
+            <div className="mt-4 flex mb-4 px-3 justify-between items-center">
               <button
                 style={order.statusId === 4 ? { display: 'none' } : {}}
                 className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
@@ -178,6 +190,15 @@ useEffect(() => {
               >
                 Új tétel hozzáadása
               </button>
+              <button
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                onClick={() => generateAndOpenOrderPdf(order.id,currUserId ? currUserId : '')}
+              >
+                Nyomtatás
+              </button>
+            </div>
+
+            <div>
             </div>
           </div>
       </div>
